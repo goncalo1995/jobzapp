@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* ── Professional Job Companion Palette ─────────────────── */
+  --color-primary: #4f6bf6; /* refined indigo-blue */
+  --color-primary-foreground: #ffffff;
+  --color-accent: #38bdf8; /* sky highlight */
+  --color-accent-foreground: #0f172a;
+
+  --color-background: #0f1117; /* deep navy-black */
+  --color-foreground: #e8eaf0; /* soft white */
+  --color-card: #181c27; /* elevated surface */
+  --color-card-foreground: #e8eaf0;
+  --color-popover: #1e2233;
+  --color-popover-foreground: #e8eaf0;
+  --color-secondary: #252a3a;
+  --color-secondary-foreground: #c4c9d8;
+  --color-muted: #252a3a;
+  --color-muted-foreground: #8690a8;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #2a3040;
+  --color-input: #2a3040;
+  --color-ring: #4f6bf6;
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+
+  --radius: 0.625rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-sans), "Inter", system-ui, sans-serif;
+  --font-heading:
+    var(--font-heading), "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
