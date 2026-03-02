@@ -104,104 +104,98 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div className="max-w-4xl space-y-10">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="space-y-4">
-          <Link href="/dashboard/cvs" className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5F0E8]/30 hover:text-[#FF4500] transition-colors group">
-            <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" />
-            Back to Vault
+    <div className="max-w-4xl space-y-8">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-3">
+          <Link href="/dashboard/cvs" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors group">
+            <ArrowLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
+            Back to Resumes
           </Link>
-          <div className="space-y-2">
-            <h1 className="text-5xl font-heading uppercase tracking-tighter text-[#F5F0E8]">
-              Edit <span className="text-[#FF4500] italic">CV</span>
-            </h1>
-            <p className="text-[#F5F0E8]/50 font-mono text-sm uppercase tracking-widest leading-relaxed">
-              Tailoring for: <span className="text-[#F5F0E8]">{cv.target_role || 'General'}</span>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-heading font-bold text-foreground">Edit Resume</h1>
+            <p className="text-muted-foreground text-sm">
+              Tailoring for: <span className="font-medium text-foreground">{cv.target_role || 'General'}</span>
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0">
            <Button 
              variant="outline"
              onClick={handleDelete}
-             className="border-white/5 text-[#F5F0E8]/20 hover:text-red-500 hover:border-red-500/20 font-bold uppercase tracking-widest px-4 h-11"
+             className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+             size="icon"
            >
              <Trash2 className="h-4 w-4" />
            </Button>
            <Button 
              variant="outline"
              onClick={handleExport}
-             className="border-white/5 text-[#F5F0E8]/40 hover:text-[#FF4500] hover:border-[#FF4500]/20 font-bold uppercase tracking-widest px-6 h-11"
            >
              <Download className="mr-2 h-4 w-4" />
              Export PDF
            </Button>
-           <Button 
-             onClick={handleSave} 
-             disabled={saving}
-             className="bg-[#FF4500] hover:bg-[#FF8C00] text-[#0D0D0D] font-bold uppercase tracking-widest px-8 h-11"
-           >
+           <Button onClick={handleSave} disabled={saving}>
              {saving ? 'Saving...' : 'Save Changes'}
-             <Save className="ml-2 h-4 w-4" />
+             <Save className="ml-1.5 h-4 w-4" />
            </Button>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-[#121212] border border-white/5 p-8 rounded-2xl space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-card border border-border p-6 rounded-xl space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[#FF4500]">CV Name</label>
+                <label className="text-sm font-medium text-foreground">Resume Name</label>
                 <Input 
                   value={cv.name}
                   onChange={(e) => setCv({ ...cv, name: e.target.value })}
-                  className="bg-white/5 border-white/10 text-[#F5F0E8] font-mono focus:border-[#FF4500]/50"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-[#FF4500]">Target Role</label>
+                <label className="text-sm font-medium text-foreground">Target Role</label>
                 <Input 
                   value={cv.target_role || ''}
                   onChange={(e) => setCv({ ...cv, target_role: e.target.value })}
-                  className="bg-white/5 border-white/10 text-[#F5F0E8] font-mono focus:border-[#FF4500]/50"
                 />
               </div>
             </div>
 
-            <div className="space-y-2 pt-4">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-[#FF4500]">Content</label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Content</label>
+              </div>
               <Textarea 
                 value={cv.content || ''}
                 onChange={(e) => setCv({ ...cv, content: e.target.value })}
-                className="min-h-[600px] bg-white/5 border-white/10 text-[#F5F0E8] font-mono p-4 focus:border-[#FF4500]/50 transition-all text-sm leading-relaxed"
+                className="min-h-[600px] font-mono text-sm leading-relaxed resize-none"
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="bg-[#1A1A1A] border border-[#FF4500]/30 p-8 rounded-3xl space-y-6 shadow-2xl">
+        <div className="space-y-4">
+          <div className="bg-gradient-to-br from-primary/10 to-card border border-primary/20 p-5 rounded-xl space-y-3">
             <div className="flex items-center gap-2">
-               <Sparkles className="h-4 w-4 text-[#FF4500]" />
-               <h2 className="text-sm font-bold uppercase tracking-widest text-[#FF4500]">AI Optimizer</h2>
+               <Sparkles className="h-4 w-4 text-primary" />
+               <h2 className="text-xs font-semibold text-primary">AI Optimizer</h2>
             </div>
-            <p className="text-xs font-mono text-[#F5F0E8]/50 leading-relaxed uppercase tracking-widest">
+            <p className="text-xs text-muted-foreground leading-relaxed">
                Your career bio is available. We can rewrite this CV to match {cv.target_role || 'this role'} better.
             </p>
-            <Button variant="outline" className="w-full border-white/10 text-white/40 hover:text-[#FF4500] hover:border-[#FF4500]/30 font-bold uppercase tracking-widest text-[10px] h-11" disabled>
+            <Button variant="outline" className="w-full text-xs" disabled>
                Optimise for Selection
             </Button>
           </div>
 
-          <div className="bg-white/5 border border-white/5 p-8 rounded-2xl space-y-4">
-             <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#F5F0E8]/30">History</h3>
-             <div className="space-y-3">
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#F5F0E8]/20">
+          <div className="bg-card border border-border p-5 rounded-xl space-y-4">
+             <h3 className="text-xs font-semibold text-muted-foreground">History</h3>
+             <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                    <span>Last major edit</span>
                    <span>{new Date(cv.updated_at).toLocaleDateString()}</span>
                 </div>
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#F5F0E8]/20">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                    <span>Created</span>
                    <span>{new Date(cv.created_at).toLocaleDateString()}</span>
                 </div>

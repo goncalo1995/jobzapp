@@ -49,7 +49,7 @@ export default function NewJobPage() {
           name: formData.company_name,
           website: formData.company_website || null,
           created_by: user.id,
-        }, { onConflict: 'name' })
+        }, { onConflict: 'name, created_by' })
         .select()
         .single();
 

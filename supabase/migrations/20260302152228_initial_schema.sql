@@ -8,8 +8,11 @@ CREATE TABLE IF NOT EXISTS public.companies (
     website TEXT,
     industry TEXT,
     notes TEXT,
+    created_by UUID REFERENCES auth.users(id),
+    is_public BOOLEAN DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (name, created_by)
 );
 
 CREATE TABLE IF NOT EXISTS public.contacts (
@@ -21,11 +24,17 @@ CREATE TABLE IF NOT EXISTS public.contacts (
     linkedin TEXT,
     notes TEXT,
     last_interaction TIMESTAMPTZ,
+    created_by UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE TYPE public.interaction_type AS ENUM ('Email', 'Call', 'LinkedIn', 'Interview', 'Follow-up');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interaction_type') THEN
+        CREATE TYPE public.interaction_type AS ENUM ('Email', 'Call', 'LinkedIn', 'Interview', 'Follow-up');
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.interactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -35,6 +44,7 @@ CREATE TABLE IF NOT EXISTS public.interactions (
     notes TEXT,
     follow_up_date TIMESTAMPTZ,
     follow_up_completed BOOLEAN DEFAULT FALSE,
+    created_by UUID REFERENCES auth.users(id),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -48,7 +58,8 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     job_search_preferences JSONB, -- preferredRoles, preferredLocations, etc.
     default_cv_id UUID, -- Circular reference handled later
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT fk_default_cv FOREIGN KEY (default_cv_id) REFERENCES public.cvs(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS public.cvs (
@@ -69,14 +80,15 @@ CREATE TABLE IF NOT EXISTS public.cvs (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Handle circular reference for user_profiles.default_cv_id
-ALTER TABLE public.user_profiles ADD CONSTRAINT fk_default_cv 
-    FOREIGN KEY (default_cv_id) REFERENCES public.cvs(id) ON DELETE SET NULL;
-
 -- 3. Job Applications & Timeline
-CREATE TYPE public.application_status AS ENUM (
-    'Wishlist', 'Applied', 'Pending Review', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_status') THEN
+        CREATE TYPE public.application_status AS ENUM (
+            'Wishlist', 'Applied', 'Pending Review', 'Interviewing', 'Offer', 'Rejected', 'Withdrawn'
+        );
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.job_applications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -106,12 +118,18 @@ CREATE TABLE IF NOT EXISTS public.job_applications (
     last_updated TIMESTAMPTZ DEFAULT NOW(),
     next_follow_up TIMESTAMPTZ,
     response_time INTEGER, -- Days
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT fk_cover_letter FOREIGN KEY (cover_letter_id) REFERENCES public.cover_letters(id) ON DELETE SET NULL
 );
 
-CREATE TYPE public.interview_type AS ENUM (
-    'Phone Screen', 'Technical', 'HR', 'Hiring Manager', 'Panel', 'Final', 'Take-home'
-);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interview_type') THEN
+        CREATE TYPE public.interview_type AS ENUM (
+            'Phone Screen', 'Technical', 'HR', 'Hiring Manager', 'Panel', 'Final', 'Take-home'
+        );
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.interviews (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -137,7 +155,12 @@ CREATE TABLE IF NOT EXISTS public.interviews (
 );
 
 -- 4. Offers & Cover Letters
-CREATE TYPE public.offer_status AS ENUM ('Pending', 'Accepted', 'Declined', 'Negotiating', 'Expired');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'offer_status') THEN
+        CREATE TYPE public.offer_status AS ENUM ('Pending', 'Accepted', 'Declined', 'Negotiating', 'Expired');
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.job_offers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -177,10 +200,6 @@ CREATE TABLE IF NOT EXISTS public.cover_letters (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Completion of job_applications circular reference
-ALTER TABLE public.job_applications ADD CONSTRAINT fk_cover_letter 
-    FOREIGN KEY (cover_letter_id) REFERENCES public.cover_letters(id) ON DELETE SET NULL;
-
 -- 5. Helper Functions & Triggers (Automated updated_at)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -190,6 +209,11 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
+DROP TRIGGER IF EXISTS update_contacts_updated_at ON public.contacts;
+DROP TRIGGER IF EXISTS update_user_profiles_updated_at ON public.user_profiles;
+DROP TRIGGER IF EXISTS update_cvs_updated_at ON public.cvs;
+DROP TRIGGER IF EXISTS update_job_applications_updated_at ON public.job_applications;
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON public.companies FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_contacts_updated_at BEFORE UPDATE ON public.contacts FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
 CREATE TRIGGER update_user_profiles_updated_at BEFORE UPDATE ON public.user_profiles FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();
@@ -210,6 +234,10 @@ ALTER TABLE public.interactions ENABLE ROW LEVEL SECURITY;
 -- 6. RLS Policies (Complete)
 
 -- USER PROFILES (already done, included for completeness)
+DROP POLICY IF EXISTS "Users can create own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.user_profiles;
+DROP POLICY IF EXISTS "Users can delete own profile" ON public.user_profiles;
 CREATE POLICY "Users can create own profile" ON public.user_profiles 
     FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can view own profile" ON public.user_profiles 
@@ -220,6 +248,10 @@ CREATE POLICY "Users can delete own profile" ON public.user_profiles
     FOR DELETE USING (auth.uid() = id);
 
 -- CVS
+DROP POLICY IF EXISTS "Users can create own CVs" ON public.cvs;
+DROP POLICY IF EXISTS "Users can view own CVs" ON public.cvs;
+DROP POLICY IF EXISTS "Users can update own CVs" ON public.cvs;
+DROP POLICY IF EXISTS "Users can delete own CVs" ON public.cvs;
 CREATE POLICY "Users can create own CVs" ON public.cvs 
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can view own CVs" ON public.cvs 
@@ -230,6 +262,10 @@ CREATE POLICY "Users can delete own CVs" ON public.cvs
     FOR DELETE USING (auth.uid() = user_id);
 
 -- JOB APPLICATIONS
+DROP POLICY IF EXISTS "Users can create own job applications" ON public.job_applications;
+DROP POLICY IF EXISTS "Users can view own job applications" ON public.job_applications;
+DROP POLICY IF EXISTS "Users can update own job applications" ON public.job_applications;
+DROP POLICY IF EXISTS "Users can delete own job applications" ON public.job_applications;
 CREATE POLICY "Users can create own job applications" ON public.job_applications 
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can view own job applications" ON public.job_applications 
@@ -240,6 +276,10 @@ CREATE POLICY "Users can delete own job applications" ON public.job_applications
     FOR DELETE USING (auth.uid() = user_id);
 
 -- INTERVIEWS (access via job application)
+DROP POLICY IF EXISTS "Users can create interviews for own jobs" ON public.interviews;
+DROP POLICY IF EXISTS "Users can view interviews for own jobs" ON public.interviews;
+DROP POLICY IF EXISTS "Users can update interviews for own jobs" ON public.interviews;
+DROP POLICY IF EXISTS "Users can delete interviews for own jobs" ON public.interviews;
 CREATE POLICY "Users can create interviews for own jobs" ON public.interviews 
     FOR INSERT WITH CHECK (
         EXISTS (
@@ -275,6 +315,10 @@ CREATE POLICY "Users can delete interviews for own jobs" ON public.interviews
     );
 
 -- JOB OFFERS (access via job application)
+DROP POLICY IF EXISTS "Users can create offers for own jobs" ON public.job_offers;
+DROP POLICY IF EXISTS "Users can view offers for own jobs" ON public.job_offers;
+DROP POLICY IF EXISTS "Users can update offers for own jobs" ON public.job_offers;
+DROP POLICY IF EXISTS "Users can delete offers for own jobs" ON public.job_offers;
 CREATE POLICY "Users can create offers for own jobs" ON public.job_offers 
     FOR INSERT WITH CHECK (
         EXISTS (
@@ -310,6 +354,10 @@ CREATE POLICY "Users can delete offers for own jobs" ON public.job_offers
     );
 
 -- COVER LETTERS (access via job application)
+DROP POLICY IF EXISTS "Users can create cover letters for own jobs" ON public.cover_letters;
+DROP POLICY IF EXISTS "Users can view cover letters for own jobs" ON public.cover_letters;
+DROP POLICY IF EXISTS "Users can update cover letters for own jobs" ON public.cover_letters;
+DROP POLICY IF EXISTS "Users can delete cover letters for own jobs" ON public.cover_letters;
 CREATE POLICY "Users can create cover letters for own jobs" ON public.cover_letters 
     FOR INSERT WITH CHECK (
         EXISTS (
@@ -344,15 +392,12 @@ CREATE POLICY "Users can delete cover letters for own jobs" ON public.cover_lett
         )
     );
 
--- COMPANIES (shared resource - anyone can view, but only creators can modify)
--- Add user_id column to companies first
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
-ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false;
-
--- Update existing companies to have created_by from job applications (optional)
--- This is a one-time migration if you have existing data
 
 -- Companies RLS
+DROP POLICY IF EXISTS "Anyone can view public companies" ON public.companies;
+DROP POLICY IF EXISTS "Users can create companies" ON public.companies;
+DROP POLICY IF EXISTS "Creators can update their companies" ON public.companies;
+DROP POLICY IF EXISTS "Creators can delete their companies" ON public.companies;
 CREATE POLICY "Anyone can view public companies" ON public.companies 
     FOR SELECT USING (is_public = true OR created_by = auth.uid());
     
@@ -366,9 +411,10 @@ CREATE POLICY "Creators can delete their companies" ON public.companies
     FOR DELETE USING (created_by = auth.uid());
 
 -- CONTACTS (access via company or job application)
--- Add user_id to contacts for creator tracking
-ALTER TABLE public.contacts ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
-
+DROP POLICY IF EXISTS "Users can view contacts from their applications" ON public.contacts;
+DROP POLICY IF EXISTS "Users can create contacts" ON public.contacts;
+DROP POLICY IF EXISTS "Users can update own contacts" ON public.contacts;
+DROP POLICY IF EXISTS "Users can delete own contacts" ON public.contacts;
 CREATE POLICY "Users can view contacts from their applications" ON public.contacts 
     FOR SELECT USING (
         created_by = auth.uid() OR
@@ -395,9 +441,10 @@ CREATE POLICY "Users can delete own contacts" ON public.contacts
     FOR DELETE USING (created_by = auth.uid());
 
 -- INTERACTIONS (access via contact)
--- Add user_id to interactions for creator tracking
-ALTER TABLE public.interactions ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id);
-
+DROP POLICY IF EXISTS "Users can view interactions for their contacts" ON public.interactions;
+DROP POLICY IF EXISTS "Users can create interactions" ON public.interactions;
+DROP POLICY IF EXISTS "Users can update own interactions" ON public.interactions;
+DROP POLICY IF EXISTS "Users can delete own interactions" ON public.interactions;
 CREATE POLICY "Users can view interactions for their contacts" ON public.interactions 
     FOR SELECT USING (
         created_by = auth.uid() OR
@@ -423,6 +470,7 @@ CREATE POLICY "Users can delete own interactions" ON public.interactions
 -- 7. Additional Helper Policies for Better UX
 
 -- Allow users to view companies they've applied to even if not public
+DROP POLICY IF EXISTS "Users can view companies they applied to" ON public.companies;
 CREATE POLICY "Users can view companies they applied to" ON public.companies 
     FOR SELECT USING (
         EXISTS (
@@ -432,6 +480,7 @@ CREATE POLICY "Users can view companies they applied to" ON public.companies
     );
 
 -- Allow users to view contacts from companies they've applied to
+DROP POLICY IF EXISTS "Users can view contacts from applied companies" ON public.contacts;
 CREATE POLICY "Users can view contacts from applied companies" ON public.contacts 
     FOR SELECT USING (
         EXISTS (

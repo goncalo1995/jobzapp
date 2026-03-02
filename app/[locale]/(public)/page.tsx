@@ -15,12 +15,12 @@ export default function LandingPage() {
           <Zap className="h-4 w-4" /> Phase 1: MVP under construction
         </div>
         
-        <h1 className="text-6xl md:text-8xl font-heading uppercase tracking-tighter leading-[0.9]">
+        <h1 className="text-5xl sm:text-6xl md:text-8xl font-heading uppercase tracking-tighter leading-[0.9]">
           Stop tracking in <br/>
           <span className="text-primary italic">spreadsheets</span>.
         </h1>
         
-        <p className="text-xl md:text-2xl text-[#F5F0E8]/50 font-mono leading-relaxed max-w-2xl">
+        <p className="text-lg md:text-2xl text-[#F5F0E8]/50 font-mono leading-relaxed max-w-2xl px-4">
           JobZapp: The high-speed job application tracker. Manage your career with AI-powered precision.
         </p>
         

@@ -47,6 +47,9 @@ export async function callOpenRouter(
   metadata?: AIServiceMetadata,
   jsonMode: boolean = true
 ) {
+  if (!process.env.OPENROUTER_API_KEY) {
+    throw new Error('OpenRouter API key not found');
+  }
   const model = CHAT_MODELS[modelKey];
 
   if (!model) {
