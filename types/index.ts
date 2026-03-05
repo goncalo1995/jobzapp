@@ -9,3 +9,6 @@ export type JobApplication = Database['public']['Tables']['job_applications']['R
 export type Interview = Database['public']['Tables']['interviews']['Row']
 export type JobOffer = Database['public']['Tables']['job_offers']['Row']
 export type CoverLetter = Database['public']['Tables']['cover_letters']['Row']
+
+export type ApplicationStatus = Database['public']['Enums']['application_status']
+export type InterviewType = Database['public']['Enums']['interview_type']

@@ -8,8 +8,13 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (!user || !user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const betaUsers = process.env.BETA_USERS?.split(",");
+    if (!betaUsers?.includes(user.email)) {
+      return NextResponse.json({ error: 'Currently only available for beta users' }, { status: 401 });
     }
 
     const { rawBio } = await request.json();

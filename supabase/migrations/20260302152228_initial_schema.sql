@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS public.job_applications (
     flexibility TEXT, -- 'Remote', 'On-site', 'Hybrid'
     min_salary NUMERIC,
     max_salary NUMERIC,
-    salary_currency TEXT DEFAULT 'USD',
+    salary_currency TEXT DEFAULT 'EUR',
     benefits TEXT[],
     status public.application_status DEFAULT 'Wishlist',
     applied_date TIMESTAMPTZ,
@@ -119,6 +119,7 @@ CREATE TABLE IF NOT EXISTS public.job_applications (
     next_follow_up TIMESTAMPTZ,
     response_time INTEGER, -- Days
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT fk_cover_letter FOREIGN KEY (cover_letter_id) REFERENCES public.cover_letters(id) ON DELETE SET NULL
 );
 

@@ -370,36 +370,81 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SectionContainer title="Skills" icon={<Code2 className="h-4 w-4" />}>
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-secondary/20 rounded-lg border border-border/50">
-                  {structuredData.skills?.map((skill: string, idx: number) => (
-                    <Badge key={idx} variant="secondary" className="flex items-center gap-1 py-1">
-                      {skill}
-                      <button onClick={() => {
+              <div className="space-y-6">
+                {structuredData.skills?.map((skillGroup: any, groupIdx: number) => (
+                  <div key={groupIdx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-3 relative group">
+                    <button 
+                      className="absolute top-2 right-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive w-6 h-6 rounded-md hover:bg-destructive/10"
+                      onClick={() => {
                         const newSkills = [...structuredData.skills];
-                        newSkills.splice(idx, 1);
+                        newSkills.splice(groupIdx, 1);
                         setStructuredData({...structuredData, skills: newSkills});
-                      }}>
-                        <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Add a skill..." 
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = (e.target as HTMLInputElement).value.trim();
-                        if (val && !structuredData.skills?.includes(val)) {
-                          setStructuredData({...structuredData, skills: [...(structuredData.skills || []), val]});
-                          (e.target as HTMLInputElement).value = '';
-                        }
-                      }
-                    }}
-                    className="h-8 text-sm"
-                  />
-                </div>
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                    
+                    <Input 
+                      value={skillGroup.category || ''} 
+                      placeholder="Category (e.g., Languages, Frameworks)"
+                      onChange={(e) => {
+                        const newSkills = [...structuredData.skills];
+                        newSkills[groupIdx].category = e.target.value;
+                        setStructuredData({...structuredData, skills: newSkills});
+                      }}
+                      className="h-7 text-xs font-semibold max-w-[200px]"
+                    />
+                    
+                    <div className="space-y-2">
+                       <div className="flex flex-wrap gap-2 min-h-[30px]">
+                        {skillGroup.items?.map((skill: string, idx: number) => (
+                          <Badge key={idx} variant="secondary" className="flex items-center gap-1 py-1">
+                            {skill}
+                            <button onClick={() => {
+                              const newSkills = [...structuredData.skills];
+                              newSkills[groupIdx].items.splice(idx, 1);
+                              setStructuredData({...structuredData, skills: newSkills});
+                            }}>
+                              <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <Input 
+                        placeholder="Add a skill and press Enter..." 
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            const val = (e.target as HTMLInputElement).value.trim();
+                            if (val) {
+                              const newSkills = [...structuredData.skills];
+                              if (!newSkills[groupIdx].items) newSkills[groupIdx].items = [];
+                              if (!newSkills[groupIdx].items.includes(val)) {
+                                newSkills[groupIdx].items.push(val);
+                                setStructuredData({...structuredData, skills: newSkills});
+                              }
+                              (e.target as HTMLInputElement).value = '';
+                            }
+                          }
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                ))}
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-dashed h-8 text-xs"
+                  onClick={() => {
+                    setStructuredData({
+                      ...structuredData, 
+                      skills: [...(structuredData.skills || []), { category: '', items: [] }]
+                    });
+                  }}
+                >
+                  <Plus className="h-3 w-3 mr-2" /> Add Skill Category
+                </Button>
               </div>
             </SectionContainer>
 
