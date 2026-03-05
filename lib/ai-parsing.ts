@@ -9,7 +9,7 @@ The JSON should follow this structure:
   "full_name": "string",
   "current_role": "string",
   "summary": "string",
-  "skills": ["string"],
+  "skills": [{"category": "string", "items": ["string"]}],
   "experience": [
     {
       "company": "string",
@@ -22,7 +22,8 @@ The JSON should follow this structure:
     {
       "institution": "string",
       "degree": "string",
-      "period": "string"
+      "period": "string",
+      "points": ["string"]
     }
   ],
   "projects": [

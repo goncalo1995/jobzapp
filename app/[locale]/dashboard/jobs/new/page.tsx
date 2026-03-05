@@ -1,10 +1,10 @@
 // app/[locale]/dashboard/jobs/new/page.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Building2, Save, ArrowLeft, Link as LinkIcon, Briefcase, Globe, CheckCircle2, Zap } from 'lucide-react';
+import { Building2, Save, ArrowLeft, Link as LinkIcon, Briefcase, Globe, CheckCircle2, Zap, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,6 +16,7 @@ export default function NewJobPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   
+  const [cvs, setCvs] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     job_title: '',
     company_name: '',
@@ -23,9 +24,26 @@ export default function NewJobPage() {
     job_url: '',
     description: '',
     status: 'Applied',
+    cv_id: '',
   });
 
   const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchCvs() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('cvs')
+        .select('id, name, target_role')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+      
+      if (data) setCvs(data);
+    }
+    fetchCvs();
+  }, [supabase]);
 
   async function handleCreate() {
     if (!formData.job_title || !formData.company_name) {
@@ -65,6 +83,7 @@ export default function NewJobPage() {
           job_url: formData.job_url || null,
           job_description: formData.description || null,
           status: formData.status as any,
+          cv_id: formData.cv_id || null,
           applied_date: formData.status === 'Applied' ? new Date().toISOString() : null,
           last_updated: new Date().toISOString(),
         });
@@ -157,22 +176,50 @@ export default function NewJobPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Status</label>
-              <Select 
-                value={formData.status} 
-                onValueChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Wishlist">Wishlist</SelectItem>
-                  <SelectItem value="Applied">Applied</SelectItem>
-                  <SelectItem value="Interviewing">Interviewing</SelectItem>
-                  <SelectItem value="Offer">Offer</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Status</label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Wishlist">Wishlist</SelectItem>
+                    <SelectItem value="Applied">Applied</SelectItem>
+                    <SelectItem value="Interviewing">Interviewing</SelectItem>
+                    <SelectItem value="Offer">Offer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Attached CV</label>
+                <Select 
+                  value={formData.cv_id} 
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, cv_id: val }))}
+                >
+                  <SelectTrigger className="relative pl-10">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select a CV (Optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cvs.length === 0 ? (
+                      <div className="p-2 text-xs text-muted-foreground text-center">
+                        No CVs found. <Link href="/dashboard/cvs/new" className="text-primary hover:underline">Create one</Link>
+                      </div>
+                    ) : (
+                      cvs.map((cv) => (
+                        <SelectItem key={cv.id} value={cv.id}>
+                          {cv.name} {cv.target_role ? `(${cv.target_role})` : ''}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">

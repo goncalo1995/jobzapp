@@ -4,22 +4,34 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { FileText, Save, ArrowLeft, Zap, Sparkles, AlertCircle } from 'lucide-react';
+import { FileText, Save, ArrowLeft, Zap, Sparkles, AlertCircle, Plus, Trash2, Briefcase, GraduationCap, Code2, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
+import { Badge } from '@/components/ui/badge';
 
 export default function NewCVPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   
+  const [jobDescription, setJobDescription] = useState('');
+  const [tailoring, setTailoring] = useState(false);
   const [formData, setFormData] = useState({
     name: 'My New CV',
     target_role: '',
-    content: '',
+  });
+
+  const [cvData, setCvData] = useState<any>({
+    full_name: '',
+    current_role: '',
+    summary: '',
+    skills: [],
+    experience: [],
+    education: [],
+    projects: []
   });
 
   const supabase = createClient();
@@ -37,14 +49,41 @@ export default function NewCVPage() {
       
       if (data) {
         setProfile(data);
-        // Pre-fill content if profile has a bio
-        if (data.raw_bio && !formData.content) {
-          setFormData(prev => ({ ...prev, content: data.raw_bio ?? '' }));
+        if (data.parsed_data) {
+          const parsed = data.parsed_data as any;
+          setCvData({
+            ...parsed,
+            full_name: parsed.full_name || '',
+          });
+          setFormData(prev => ({ ...prev, target_role: parsed.current_role || '' }));
         }
       }
     }
     fetchProfile();
   }, [supabase]);
+
+  async function handleTailor() {
+    if (!jobDescription.trim()) {
+      toast.error('Paste the Job Description first');
+      return;
+    }
+    setTailoring(true);
+    try {
+      const res = await fetch('/api/cv/tailor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: cvData, jobDescription }),
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setCvData(data.tailoredData);
+      setFormData(prev => ({ ...prev, target_role: data.tailoredData.current_role || prev.target_role }));
+      toast.success('CV tailored successfully!');
+    } catch (err: any) {
+      toast.error(err.message || 'Tailoring failed');
+    }
+    setTailoring(false);
+  }
 
   async function handleCreate() {
     if (!formData.name) {
@@ -67,8 +106,8 @@ export default function NewCVPage() {
         user_id: user.id,
         name: formData.name,
         target_role: formData.target_role,
-        content: formData.content,
-        markdown_content: formData.content, // For now keeping same
+        content: JSON.stringify(cvData),
+        markdown_content: cvData.summary, // Fallback for simple display
         updated_at: new Date().toISOString(),
       })
       .select()
@@ -76,7 +115,6 @@ export default function NewCVPage() {
 
     if (error) {
       toast.error('Failed to create CV');
-      console.error(error);
     } else {
       toast.success('CV created successfully');
       router.push(`/dashboard/cvs`);
@@ -85,7 +123,7 @@ export default function NewCVPage() {
   }
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 pb-20">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-3">
           <Link href="/dashboard/cvs" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors group">
@@ -93,23 +131,25 @@ export default function NewCVPage() {
             Back to Resumes
           </Link>
           <div className="space-y-1">
-            <h1 className="text-3xl font-heading font-bold text-foreground">New Resume</h1>
-            <p className="text-muted-foreground text-sm">Draft your tailored resume.</p>
+            <h1 className="text-3xl font-heading font-bold text-foreground">CV Builder</h1>
+            <p className="text-muted-foreground text-sm">Tailor your resume for a specific job.</p>
           </div>
         </div>
-        <Button onClick={handleCreate} disabled={loading}>
-          {loading ? 'Creating...' : 'Create Resume'}
-          <Save className="ml-1.5 h-4 w-4" />
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleCreate} disabled={loading}>
+            {loading ? 'Saving...' : 'Save CV'}
+            <Save className="ml-1.5 h-4 w-4" />
+          </Button>
+        </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Editor */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-card border border-border p-6 rounded-xl space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left column: Controls & Job Info */}
+        <div className="lg:col-span-4 space-y-6">
+          <div className="bg-card border border-border p-6 rounded-xl space-y-6 sticky top-8">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Resume Name</label>
+                <label className="text-sm font-semibold text-foreground">CV Name</label>
                 <Input 
                   value={formData.name}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -117,66 +157,373 @@ export default function NewCVPage() {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Target Role</label>
+                <label className="text-sm font-semibold text-foreground">Target Role</label>
                 <Input 
                   value={formData.target_role}
-                  onChange={(e) => setFormData(prev => ({ ...prev, target_role: e.target.value }))}
+                  onChange={(e) => {
+                    setFormData(prev => ({ ...prev, target_role: e.target.value }));
+                    setCvData((prev: any) => ({ ...prev, current_role: e.target.value }));
+                  }}
                   placeholder="Ex: Frontend Engineer"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
+            <Separator />
+
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">Content</label>
-                <span className="text-xs text-muted-foreground italic">Supports basic text for now</span>
+                <label className="text-sm font-semibold text-foreground">Job Description</label>
+                <div className="bg-primary/10 p-1.5 rounded-lg">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                </div>
               </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Paste the JD below to unlock AI tailoring. We&apos;ll rewrite your content to highlight relevance.
+              </p>
               <Textarea 
-                value={formData.content}
-                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="Paste your CV content here..."
-                className="min-h-[500px] font-mono text-sm leading-relaxed resize-none"
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                placeholder="Paste the job requirements here..."
+                className="min-h-[300px] text-sm leading-relaxed resize-none bg-secondary/30"
               />
+              <Button 
+                onClick={handleTailor} 
+                disabled={tailoring || !profile?.parsed_data} 
+                className="w-full"
+                variant="outline"
+              >
+                {tailoring ? 'Tailoring...' : 'Tailor with AI'}
+                <Sparkles className="ml-1.5 h-4 w-4" />
+              </Button>
+              {!profile?.parsed_data && (
+                <p className="text-[10px] text-destructive flex items-center gap-1.5">
+                  <AlertCircle className="h-3 w-3" />
+                  Fill your Profile data first to enable AI tailoring.
+                </p>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Right: Actions and Info */}
-        <div className="space-y-4">
-          <div className="bg-gradient-to-br from-primary/10 to-card border border-primary/20 p-5 rounded-xl space-y-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <h2 className="text-xs font-semibold text-primary">
-                AI Assist
-              </h2>
-            </div>
-            
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Use AI to rewrite your content for high ATS match based on your target role.
-            </p>
-            
-            <Button 
-              variant="outline"
-              className="w-full text-xs"
-              disabled
-            >
-              Tailor for Role (Coming Soon)
-            </Button>
-          </div>
-
-          {!profile?.raw_bio && (
-            <div className="bg-destructive/10 border border-destructive/20 p-5 rounded-xl flex gap-3">
-              <AlertCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <p className="text-xs font-semibold text-destructive">Profile Incomplete</p>
-                <p className="text-xs text-destructive/80 leading-relaxed">
-                  Your profile bio is empty. Complete it to enable AI tailoring features.
-                </p>
+        {/* Right column: CV Editor */}
+        <div className="lg:col-span-8 space-y-6">
+          <SectionContainer title="Personal Summary" icon={<Type className="h-4 w-4" />}>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Full Name</label>
+                <Input 
+                  value={cvData.full_name || ''} 
+                  onChange={(e) => setCvData({...cvData, full_name: e.target.value})}
+                  placeholder="Your Name"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-muted-foreground">Current Role</label>
+                <Input 
+                  value={cvData.current_role || ''} 
+                  onChange={(e) => setCvData({...cvData, current_role: e.target.value})}
+                  placeholder="e.g. Senior Software Engineer"
+                />
               </div>
             </div>
-          )}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground">Professional Summary</label>
+              <Textarea 
+                value={cvData.summary || ''} 
+                onChange={(e) => setCvData({...cvData, summary: e.target.value})}
+                placeholder="A brief overview of your professional background..."
+                className="min-h-[120px] resize-none"
+              />
+            </div>
+          </SectionContainer>
+
+          <SectionContainer title="Work Experience" icon={<Briefcase className="h-4 w-4" />}>
+            <div className="space-y-6">
+              {cvData.experience?.map((exp: any, idx: number) => (
+                <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-4 space-y-4 relative group">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      const newExp = [...cvData.experience];
+                      newExp.splice(idx, 1);
+                      setCvData({...cvData, experience: newExp});
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Company</label>
+                      <Input 
+                        value={exp.company || ''} 
+                        onChange={(e) => {
+                          const newExp = [...cvData.experience];
+                          newExp[idx].company = e.target.value;
+                          setCvData({...cvData, experience: newExp});
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Role</label>
+                      <Input 
+                        value={exp.role || ''} 
+                        onChange={(e) => {
+                          const newExp = [...cvData.experience];
+                          newExp[idx].role = e.target.value;
+                          setCvData({...cvData, experience: newExp});
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold uppercase text-muted-foreground">Period</label>
+                      <Input 
+                        value={exp.period || ''} 
+                        onChange={(e) => {
+                          const newExp = [...cvData.experience];
+                          newExp[idx].period = e.target.value;
+                          setCvData({...cvData, experience: newExp});
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold uppercase text-muted-foreground">Achievements / Points</label>
+                    <div className="space-y-2">
+                      {exp.points?.map((point: string, pIdx: number) => (
+                        <div key={pIdx} className="flex gap-2">
+                          <Input 
+                            value={point} 
+                            onChange={(e) => {
+                              const newExp = [...cvData.experience];
+                              newExp[idx].points[pIdx] = e.target.value;
+                              setCvData({...cvData, experience: newExp});
+                            }}
+                            className="h-8 text-sm"
+                          />
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              const newExp = [...cvData.experience];
+                              newExp[idx].points.splice(pIdx, 1);
+                              setCvData({...cvData, experience: newExp});
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                      <Button 
+                        variant="link" 
+                        size="sm" 
+                        className="h-6 text-[10px] p-0 text-primary"
+                        onClick={() => {
+                          const newExp = [...cvData.experience];
+                          if (!newExp[idx].points) newExp[idx].points = [];
+                          newExp[idx].points.push("");
+                          setCvData({...cvData, experience: newExp});
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" /> Add point
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full border-dashed"
+                onClick={() => {
+                  setCvData({
+                    ...cvData, 
+                    experience: [...(cvData.experience || []), { company: '', role: '', period: '', points: [''] }]
+                  });
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" /> Add Experience
+              </Button>
+            </div>
+          </SectionContainer>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <SectionContainer title="Skills" icon={<Code2 className="h-4 w-4" />}>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-secondary/20 rounded-lg border border-border/50">
+                  {cvData.skills?.map((skill: string, idx: number) => (
+                    <Badge key={idx} variant="secondary" className="flex items-center gap-1 py-1">
+                      {skill}
+                      <button onClick={() => {
+                        const newSkills = [...cvData.skills];
+                        newSkills.splice(idx, 1);
+                        setCvData({...cvData, skills: newSkills});
+                      }}>
+                        <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Add a skill..." 
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = (e.target as HTMLInputElement).value.trim();
+                        if (val && !cvData.skills?.includes(val)) {
+                          setCvData({...cvData, skills: [...(cvData.skills || []), val]});
+                          (e.target as HTMLInputElement).value = '';
+                        }
+                      }
+                    }}
+                    className="h-8 text-sm"
+                  />
+                </div>
+              </div>
+            </SectionContainer>
+
+            <SectionContainer title="Education" icon={<GraduationCap className="h-4 w-4" />}>
+              <div className="space-y-4">
+                {cvData.education?.map((edu: any, idx: number) => (
+                  <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-2 relative group">
+                    <button 
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                      onClick={() => {
+                        const newEdu = [...cvData.education];
+                        newEdu.splice(idx, 1);
+                        setCvData({...cvData, education: newEdu});
+                      }}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                    <Input 
+                      value={edu.institution || ''} 
+                      placeholder="Institution"
+                      onChange={(e) => {
+                        const newEdu = [...cvData.education];
+                        newEdu[idx].institution = e.target.value;
+                        setCvData({...cvData, education: newEdu});
+                      }}
+                      className="h-7 text-xs font-semibold"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input 
+                        value={edu.degree || ''} 
+                        placeholder="Degree"
+                        onChange={(e) => {
+                          const newEdu = [...cvData.education];
+                          newEdu[idx].degree = e.target.value;
+                          setCvData({...cvData, education: newEdu});
+                        }}
+                        className="h-7 text-xs"
+                      />
+                      <Input 
+                        value={edu.period || ''} 
+                        placeholder="Period"
+                        onChange={(e) => {
+                          const newEdu = [...cvData.education];
+                          newEdu[idx].period = e.target.value;
+                          setCvData({...cvData, education: newEdu});
+                        }}
+                        className="h-7 text-xs"
+                      />
+                    </div>
+                  </div>
+                ))}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-dashed h-8 text-xs"
+                  onClick={() => {
+                    setCvData({
+                      ...cvData, 
+                      education: [...(cvData.education || []), { institution: '', degree: '', period: '' }]
+                    });
+                  }}
+                >
+                  <Plus className="h-3 w-3 mr-2" /> Add Education
+                </Button>
+              </div>
+            </SectionContainer>
+          </div>
+
+          <SectionContainer title="Key Projects" icon={<Code2 className="h-4 w-4" />}>
+            <div className="space-y-4">
+              {cvData.projects?.map((proj: any, idx: number) => (
+                <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-2 relative group">
+                  <button 
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                    onClick={() => {
+                      const newProj = [...cvData.projects];
+                      newProj.splice(idx, 1);
+                      setCvData({...cvData, projects: newProj});
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                  <Input 
+                    value={proj.name || ''} 
+                    placeholder="Project Name"
+                    onChange={(e) => {
+                      const newProj = [...cvData.projects];
+                      newProj[idx].name = e.target.value;
+                      setCvData({...cvData, projects: newProj});
+                    }}
+                    className="h-7 text-xs font-semibold"
+                  />
+                  <Textarea 
+                    value={proj.description || ''} 
+                    placeholder="Description"
+                    onChange={(e) => {
+                      const newProj = [...cvData.projects];
+                      newProj[idx].description = e.target.value;
+                      setCvData({...cvData, projects: newProj});
+                    }}
+                    className="min-h-[60px] text-xs resize-none"
+                  />
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full border-dashed h-8 text-xs"
+                onClick={() => {
+                  setCvData({
+                    ...cvData, 
+                    projects: [...(cvData.projects || []), { name: '', description: '' }]
+                  });
+                }}
+              >
+                <Plus className="h-3 w-3 mr-2" /> Add Project
+              </Button>
+            </div>
+          </SectionContainer>
         </div>
       </div>
     </div>
   );
+}
+
+function SectionContainer({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="p-1.5 bg-primary/10 rounded-lg text-primary">
+          {icon}
+        </div>
+        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Separator() {
+  return <div className="h-px bg-border w-full" />;
 }

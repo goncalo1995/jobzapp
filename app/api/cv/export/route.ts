@@ -29,7 +29,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'CV not found' }, { status: 404 });
     }
 
-    const pdfBuffer = await generateCVPDF(cv.name, cv.content || '', cv.target_role || undefined);
+    let cvData: any;
+    try {
+      cvData = JSON.parse(cv.content || '{}');
+      // Ensure basic fields if missing
+      if (!cvData.full_name) cvData.full_name = cv.name;
+      if (!cvData.current_role) cvData.current_role = cv.target_role;
+    } catch (e) {
+      // Fallback for legacy plain text CVs
+      cvData = { 
+        full_name: cv.name, 
+        current_role: cv.target_role, 
+        summary: cv.content 
+      };
+    }
+
+    const pdfBuffer = await generateCVPDF(cvData);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {
