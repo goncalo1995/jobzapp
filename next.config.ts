@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'media.helenacolaco.com',
+        hostname: 'img.logo.dev',
       },
       // {
       //   protocol: 'https',

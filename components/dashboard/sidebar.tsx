@@ -9,6 +9,7 @@ import {
   LayoutDashboard, 
   User, 
   Briefcase, 
+  Calendar as CalendarIcon, 
   FileText, 
   Settings, 
   LogOut,
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
   { href: '/dashboard/me', label: 'Profile', icon: User },
   { href: '/dashboard/jobs', label: 'Applications', icon: Briefcase },
+  { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarIcon },
   { href: '/dashboard/cvs', label: 'Resumes', icon: FileText },
 ];
 

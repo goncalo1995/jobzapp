@@ -27,8 +27,8 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
   const [styleConfig, setStyleConfig] = useState({
     fontSize: 10,
     headerFontSize: 24,
-    margins: 40,
-    sectionSpacing: 15
+    margins: 30,
+    sectionSpacing: 10
   });
   const [cvData, setCvData] = useState<any>({
     full_name: '',
@@ -69,8 +69,13 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
             skills: parsed.skills || [],
             experience: parsed.experience || [],
             education: parsed.education || [],
-            projects: parsed.projects || []
+            projects: parsed.projects || [],
+            certifications: parsed.certifications || []
           });
+          
+          if (parsed.styleConfig) {
+            setStyleConfig(parsed.styleConfig);
+          }
         } catch (e) {
           // Fallback for legacy text content
           setCvData((prev: any) => ({
@@ -93,7 +98,7 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
       .update({
         name: cv.name,
         target_role: cv.target_role,
-        content: JSON.stringify(cvData),
+        content: JSON.stringify({...cvData, styleConfig}),
         markdown_content: cvData.summary,
         updated_at: new Date().toISOString(),
       })
@@ -128,7 +133,7 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
       const response = await fetch('/api/cv/export', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cvId: id }),
+        body: JSON.stringify({ cvId: id, styleConfig }),
       });
 
       if (!response.ok) throw new Error('Export failed');
@@ -672,6 +677,70 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
                     </Button>
                   </div>
                 </SectionContainer>
+
+              <SectionContainer title="Certifications / Achievements" icon={<Code2 className="h-4 w-4" />}>
+                <div className="space-y-4">
+                  {cvData.certifications?.map((cert: any, idx: number) => (
+                    <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-2 relative group">
+                      <button 
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          const newCerts = [...cvData.certifications];
+                          newCerts.splice(idx, 1);
+                          setCvData({...cvData, certifications: newCerts});
+                        }}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                      <Input 
+                        value={cert.name || ''} 
+                        placeholder="Certification Name or Achievement"
+                        onChange={(e) => {
+                          const newCerts = [...cvData.certifications];
+                          newCerts[idx].name = e.target.value;
+                          setCvData({...cvData, certifications: newCerts});
+                        }}
+                        className="h-7 text-xs font-semibold pr-8"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input 
+                          value={cert.issuer || ''} 
+                          placeholder="Issuer (e.g. AWS, Microsoft)"
+                          onChange={(e) => {
+                            const newCerts = [...cvData.certifications];
+                            newCerts[idx].issuer = e.target.value;
+                            setCvData({...cvData, certifications: newCerts});
+                          }}
+                          className="h-7 text-xs"
+                        />
+                        <Input 
+                          value={cert.date || ''} 
+                          placeholder="Date / Year"
+                          onChange={(e) => {
+                            const newCerts = [...cvData.certifications];
+                            newCerts[idx].date = e.target.value;
+                            setCvData({...cvData, certifications: newCerts});
+                          }}
+                          className="h-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full border-dashed h-8 text-xs"
+                    onClick={() => {
+                      setCvData({
+                        ...cvData, 
+                        certifications: [...(cvData.certifications || []), { name: '', issuer: '', date: '' }]
+                      });
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-2" /> Add Certification
+                  </Button>
+                </div>
+              </SectionContainer>
 
               <SectionContainer title="Key Projects" icon={<Code2 className="h-4 w-4" />}>
                 <div className="space-y-4">

@@ -31,7 +31,8 @@ export default function NewCVPage() {
     skills: [],
     experience: [],
     education: [],
-    projects: []
+    projects: [],
+    certifications: []
   });
 
   const supabase = createClient();
@@ -54,6 +55,7 @@ export default function NewCVPage() {
           setCvData({
             ...parsed,
             full_name: parsed.full_name || '',
+            certifications: parsed.certifications || []
           });
           setFormData(prev => ({ ...prev, target_role: parsed.current_role || '' }));
         }
@@ -501,6 +503,70 @@ export default function NewCVPage() {
                 }}
               >
                 <Plus className="h-3 w-3 mr-2" /> Add Project
+              </Button>
+            </div>
+          </SectionContainer>
+
+          <SectionContainer title="Certifications / Achievements" icon={<Code2 className="h-4 w-4" />}>
+            <div className="space-y-4">
+              {cvData.certifications?.map((cert: any, idx: number) => (
+                <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-2 relative group">
+                  <button 
+                    className="absolute top-2 right-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive w-6 h-6 rounded-md hover:bg-destructive/10"
+                    onClick={() => {
+                      const newCerts = [...cvData.certifications];
+                      newCerts.splice(idx, 1);
+                      setCvData({...cvData, certifications: newCerts});
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <Input 
+                    value={cert.name || ''} 
+                    placeholder="Certification Name or Achievement"
+                    onChange={(e) => {
+                      const newCerts = [...cvData.certifications];
+                      newCerts[idx].name = e.target.value;
+                      setCvData({...cvData, certifications: newCerts});
+                    }}
+                    className="h-7 text-xs font-semibold pr-8"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input 
+                      value={cert.issuer || ''} 
+                      placeholder="Issuer (e.g. AWS, Microsoft)"
+                      onChange={(e) => {
+                        const newCerts = [...cvData.certifications];
+                        newCerts[idx].issuer = e.target.value;
+                        setCvData({...cvData, certifications: newCerts});
+                      }}
+                      className="h-7 text-xs"
+                    />
+                    <Input 
+                      value={cert.date || ''} 
+                      placeholder="Date / Year"
+                      onChange={(e) => {
+                        const newCerts = [...cvData.certifications];
+                        newCerts[idx].date = e.target.value;
+                        setCvData({...cvData, certifications: newCerts});
+                      }}
+                      className="h-7 text-xs"
+                    />
+                  </div>
+                </div>
+              ))}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full border-dashed h-8 text-xs"
+                onClick={() => {
+                  setCvData({
+                    ...cvData, 
+                    certifications: [...(cvData.certifications || []), { name: '', issuer: '', date: '' }]
+                  });
+                }}
+              >
+                <Plus className="h-3 w-3 mr-2" /> Add Certification
               </Button>
             </div>
           </SectionContainer>

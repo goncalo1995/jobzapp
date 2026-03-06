@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { cvId } = await request.json();
+    const { cvId, styleConfig } = await request.json();
 
     if (!cvId) {
       return NextResponse.json({ error: 'Missing CV ID' }, { status: 400 });
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
       };
     }
 
-    const pdfBuffer = await generateCVPDF(cvData);
+    const pdfBuffer = await generateCVPDF(cvData, styleConfig);
 
     return new NextResponse(new Uint8Array(pdfBuffer), {
       headers: {

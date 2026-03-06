@@ -31,7 +31,8 @@ export default function ProfilePage() {
     skills: [],
     experience: [],
     education: [],
-    projects: []
+    projects: [],
+    certifications: []
   });
 
   const supabase = createClient();
@@ -555,9 +556,73 @@ export default function ProfilePage() {
                 </Button>
               </div>
             </SectionContainer>
+
+              <SectionContainer title="Certifications / Achievements" icon={<Code2 className="h-4 w-4" />}>
+                <div className="space-y-4">
+                  {structuredData.certifications?.map((cert: any, idx: number) => (
+                    <div key={idx} className="bg-secondary/20 border border-border/50 rounded-lg p-3 space-y-2 relative group">
+                      <button 
+                        className="absolute top-2 right-2 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive w-6 h-6 rounded-md hover:bg-destructive/10"
+                        onClick={() => {
+                          const newCerts = [...structuredData.certifications];
+                          newCerts.splice(idx, 1);
+                          setStructuredData({...structuredData, certifications: newCerts});
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <Input 
+                        value={cert.name || ''} 
+                        placeholder="Certification Name or Achievement"
+                        onChange={(e) => {
+                          const newCerts = [...structuredData.certifications];
+                          newCerts[idx].name = e.target.value;
+                          setStructuredData({...structuredData, certifications: newCerts});
+                        }}
+                        className="h-7 text-xs font-semibold pr-8"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input 
+                          value={cert.issuer || ''} 
+                          placeholder="Issuer (e.g. AWS, Microsoft)"
+                          onChange={(e) => {
+                            const newCerts = [...structuredData.certifications];
+                            newCerts[idx].issuer = e.target.value;
+                            setStructuredData({...structuredData, certifications: newCerts});
+                          }}
+                          className="h-7 text-xs"
+                        />
+                        <Input 
+                          value={cert.date || ''} 
+                          placeholder="Date / Year"
+                          onChange={(e) => {
+                            const newCerts = [...structuredData.certifications];
+                            newCerts[idx].date = e.target.value;
+                            setStructuredData({...structuredData, certifications: newCerts});
+                          }}
+                          className="h-7 text-xs"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full border-dashed h-8 text-xs"
+                    onClick={() => {
+                      setStructuredData({
+                        ...structuredData, 
+                        certifications: [...(structuredData.certifications || []), { name: '', issuer: '', date: '' }]
+                      });
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-2" /> Add Certification
+                  </Button>
+                </div>
+              </SectionContainer>
+            </div>
           </div>
         </div>
-      </div>
     </div>
   );
 }

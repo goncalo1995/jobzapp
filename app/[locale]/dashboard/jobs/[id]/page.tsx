@@ -1,132 +1,119 @@
 // app/[locale]/dashboard/jobs/[id]/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter, useParams } from 'next/navigation';
-import { Building2, Save, ArrowLeft, Link as LinkIcon, Briefcase, Globe, CheckCircle2, Zap, FileText, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { 
+  Building2, ArrowLeft, Trash2, Edit, 
+  Archive, FileText, Share2, MoreVertical
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
+import { 
+  OverviewTab, 
+  ContactsTab, 
+  OfferDetailsTab,
+  SidebarWidgets
+} from '@/components/job-detail-tabs';
+import { StageTransitionModal } from '@/components/stage-transition-modal';
+import type { JobApplication, Interview, Interaction, Contact, JobOffer, CV } from '@/types';
+import Image from "next/image";
 
-export default function JobDetailPage() {
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
-  const params = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   
-  const [cvs, setCvs] = useState<any[]>([]);
-  const [formData, setFormData] = useState({
-    job_title: '',
-    company_name: '',
-    company_website: '',
-    job_url: '',
-    description: '',
-    status: 'Applied',
-    cv_id: 'none',
-  });
+  const [job, setJob] = useState<(JobApplication & { company?: any }) | null>(null);
+  const [cv, setCv] = useState<CV | null>(null);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [interactions, setInteractions] = useState<Interaction[]>([]);
+  const [offers, setOffers] = useState<JobOffer[]>([]);
 
   const supabase = createClient();
 
-  useEffect(() => {
-    async function loadData() {
+  const loadData = async () => {
+    try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Fetch CVs
-      const { data: cvsData } = await supabase
-        .from('cvs')
-        .select('id, name, target_role')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
-      
-      if (cvsData) setCvs(cvsData);
-
-      // Fetch Job Application
-      if (params?.id) {
-        const { data: job, error } = await supabase
-          .from('job_applications')
-          .select(`*, company:companies(name, website)`)
-          .eq('id', params.id)
-          .eq('user_id', user.id)
-          .single();
-
-        if (error || !job) {
-           toast.error('Failed to load application');
-           router.push('/dashboard/jobs');
-           return;
-        }
-
-        setFormData({
-          job_title: job.position || '',
-          company_name: job.company?.name || job.company_name_denormalized || '',
-          company_website: job.company?.website || '',
-          job_url: job.job_url || '',
-          description: job.job_description || '',
-          status: job.status || 'Applied',
-          cv_id: job.cv_id || 'none',
-        });
-      }
-      setLoading(false);
-    }
-    loadData();
-  }, [supabase, params, router]);
-
-  async function handleSave() {
-    if (!formData.job_title || !formData.company_name) {
-      toast.error('Job title and Company name are required');
-      return;
-    }
-
-    setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast.error('Not authenticated');
-      setSaving(false);
-      return;
-    }
-
-    try {
-      const { data: company, error: companyError } = await supabase
-        .from('companies')
-        .upsert({
-          name: formData.company_name,
-          website: formData.company_website || null,
-          created_by: user.id,
-        }, { onConflict: 'name, created_by' })
-        .select()
+      // 1. Fetch Job Application
+      const { data: jobData, error: jobError } = await supabase
+        .from('job_applications')
+        .select(`*, company:companies(*)`)
+        .eq('id', id)
         .single();
 
-      if (companyError) throw companyError;
+      if (jobError || !jobData) {
+        toast.error('Failed to load application');
+        router.push('/dashboard/jobs');
+        return;
+      }
+      setJob(jobData);
 
-      const { error: jobError } = await supabase
-        .from('job_applications')
-        .update({
-          company_id: company.id,
-          company_name_denormalized: formData.company_name,
-          position: formData.job_title,
-          job_url: formData.job_url || null,
-          job_description: formData.description || null,
-          status: formData.status as any,
-          cv_id: formData.cv_id === 'none' ? null : formData.cv_id,
-          last_updated: new Date().toISOString(),
-        })
-        .eq('id', params?.id);
+      // 2. Fetch CV if exists
+      if (jobData.cv_id) {
+        const { data: cvData } = await supabase
+          .from('cvs')
+          .select('*')
+          .eq('id', jobData.cv_id)
+          .single();
+        if (cvData) setCv(cvData);
+      }
 
-      if (jobError) throw jobError;
+      // 3. Fetch Interviews
+      const { data: interviewsData } = await supabase
+        .from('interviews')
+        .select('*')
+        .eq('job_application_id', id)
+        .order('interview_date', { ascending: true });
+      if (interviewsData) setInterviews(interviewsData);
 
-      toast.success('Changes saved!');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to save changes');
+      // 4. Fetch Offers
+      const { data: offersData } = await supabase
+        .from('job_offers')
+        .select('*')
+        .eq('job_application_id', id)
+        .order('created_at', { ascending: false });
+      if (offersData) setOffers(offersData);
+
+      // 5. Fetch Company Contacts and their Interactions
+      if (jobData.company_id) {
+        const { data: contactsData } = await supabase
+          .from('contacts')
+          .select('*')
+          .eq('company_id', jobData.company_id);
+        
+        if (contactsData) {
+          setContacts(contactsData);
+          const contactIds = contactsData.map(c => c.id);
+          if (contactIds.length > 0) {
+            const { data: interactionsData } = await supabase
+              .from('interactions')
+              .select('*')
+              .in('contact_id', contactIds)
+              .order('interaction_date', { ascending: false });
+            if (interactionsData) setInteractions(interactionsData);
+          }
+        }
+      }
+
+    } catch (err) {
+      console.error(err);
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [id, supabase]);
 
   async function handleDelete() {
     if (!confirm('Are you sure you want to delete this application?')) return;
@@ -135,7 +122,7 @@ export default function JobDetailPage() {
       const { error } = await supabase
         .from('job_applications')
         .delete()
-        .eq('id', params?.id);
+        .eq('id', id);
       
       if (error) throw error;
       toast.success('Application deleted');
@@ -154,166 +141,88 @@ export default function JobDetailPage() {
     );
   }
 
+  if (!job) return null;
+
   return (
-    <div className="max-w-4xl space-y-8 pb-20">
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-3">
-          <Link href="/dashboard/jobs" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors group">
-            <ArrowLeft className="h-3 w-3 group-hover:-translate-x-0.5 transition-transform" />
-            Back to Applications
-          </Link>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-heading font-bold text-foreground">Application Details</h1>
-            <p className="text-muted-foreground text-sm">Update or review your job application.</p>
+    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+      {/* Premium Header */}
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
+        <div className="flex items-start gap-5">
+          <div className="h-16 w-16 bg-secondary rounded-2xl flex items-center justify-center border border-border shadow-sm shrink-0">
+             {job.company?.website ? (
+               <Image 
+                 src={`https://img.logo.dev/${job.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
+                 alt={job.company.name} 
+                 className="h-10 w-10 object-contain"
+                 onError={(e) => {
+                   (e.target as any).style.display = 'none';
+                   (e.target as any).nextSibling.style.display = 'flex';
+                 }}
+               />
+             ) : null}
+             <Building2 className="h-8 w-8 text-muted-foreground hidden" />
+          </div>
+          <div className="space-y-2">
+            <Link href="/dashboard/jobs" className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
+              <ArrowLeft className="h-3 w-3" />
+              Applications
+            </Link>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-heading font-black text-foreground tracking-tight">{job.position}</h1>
+              <Badge className="bg-accent/10 text-accent border-accent/20 px-3 py-1 font-bold text-xs">
+                {job.status}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+              <span className="flex items-center gap-1.5"><Building2 className="h-4 w-4" /> {job.company?.name || job.company_name_denormalized}</span>
+              <span className="flex items-center gap-1.5">•</span>
+              <span className="flex items-center gap-1.5">{job.location || 'Remote'}</span>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="text-destructive hover:bg-destructive/10 border-destructive/20" onClick={handleDelete} disabled={deleting || saving}>
-            <Trash2 className="mr-1.5 h-4 w-4" />
-            {deleting ? 'Deleting...' : 'Delete'}
-          </Button>
-          <Button onClick={handleSave} disabled={saving || deleting}>
-            {saving ? 'Saving...' : 'Save Changes'}
-            <Save className="ml-1.5 h-4 w-4" />
-          </Button>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <StageTransitionModal 
+            applicationId={job.id} 
+            currentStatus={job.status || 'Applied'} 
+            onSuccess={loadData}
+          />
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-card border border-border p-6 rounded-xl space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Job Title <span className="text-destructive">*</span></label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={formData.job_title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
-                    placeholder="e.g. Senior Frontend Developer"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Company <span className="text-destructive">*</span></label>
-                <div className="relative">
-                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={formData.company_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_name: e.target.value }))}
-                    placeholder="e.g. Google"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Company Website</label>
-                <div className="relative">
-                  <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={formData.company_website}
-                    onChange={(e) => setFormData(prev => ({ ...prev, company_website: e.target.value }))}
-                    placeholder="e.g. google.com"
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Job URL</label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    value={formData.job_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, job_url: e.target.value }))}
-                    placeholder="e.g. linkedin.com/jobs/..."
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Status</label>
-                <Select 
-                  value={formData.status} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, status: val }))}
+      {/* Dashboard Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-8">
+          <Tabs defaultValue="overview" className="space-y-8">
+            <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 gap-8">
+              {['Overview', 'Contacts', 'Offer Details'].map((tab) => (
+                <TabsTrigger 
+                  key={tab} 
+                  value={tab.toLowerCase().replace(' ', '-')}
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-4 text-sm font-bold text-muted-foreground data-[state=active]:text-foreground transition-all"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Wishlist">Wishlist</SelectItem>
-                    <SelectItem value="Applied">Applied</SelectItem>
-                    <SelectItem value="Pending Review">Pending Review</SelectItem>
-                    <SelectItem value="Interviewing">Interviewing</SelectItem>
-                    <SelectItem value="Offer">Offer</SelectItem>
-                    <SelectItem value="Rejected">Rejected</SelectItem>
-                    <SelectItem value="Withdrawn">Withdrawn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  {tab}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Attached CV</label>
-                <Select 
-                  value={formData.cv_id} 
-                  onValueChange={(val) => setFormData(prev => ({ ...prev, cv_id: val }))}
-                >
-                  <SelectTrigger className="relative pl-10">
-                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <SelectValue placeholder="Select a CV (Optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No CV Attached</SelectItem>
-                    {cvs.map((cv) => (
-                      <SelectItem key={cv.id} value={cv.id}>
-                        {cv.name} {cv.target_role ? `(${cv.target_role})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <TabsContent value="overview" className="mt-0 outline-none">
+              <OverviewTab job={job} cv={cv || undefined} />
+            </TabsContent>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Job Description / Notes</label>
-              <Textarea 
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Paste the job description or write your notes here..."
-                className="min-h-[250px] text-sm leading-relaxed resize-none"
-              />
-            </div>
-          </div>
+            <TabsContent value="contacts" className="mt-0 outline-none">
+              <ContactsTab contacts={contacts} interactions={interactions} companyId={job.company_id} onSuccess={loadData} />
+            </TabsContent>
+
+            <TabsContent value="offer-details" className="mt-0 outline-none">
+              <OfferDetailsTab offers={offers} applicationId={job.id} onSuccess={loadData} />
+            </TabsContent>
+          </Tabs>
         </div>
 
-        <div className="space-y-4">
-          <div className="bg-card border border-border p-5 rounded-xl space-y-4">
-            <h2 className="text-sm font-semibold text-foreground">Why track this?</h2>
-            <ul className="space-y-3">
-              {['AI match scoring', 'Resume tailoring', 'Interview preparation', 'Offer comparison'].map((item, i) => (
-                <li key={i} className="flex gap-2.5 text-xs text-muted-foreground items-start">
-                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-gradient-to-br from-primary/10 to-card border border-primary/20 rounded-xl p-5 space-y-3">
-            <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-primary" />
-              <h2 className="text-xs font-semibold text-primary">AI Optimizer</h2>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Updating your job details regularly helps the AI provide better recommendations.
-            </p>
-          </div>
+        {/* Sidebar Widgets */}
+        <div className="lg:col-span-4">
+           <SidebarWidgets job={job} contacts={contacts} onSuccess={loadData} />
         </div>
       </div>
     </div>

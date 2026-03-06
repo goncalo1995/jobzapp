@@ -1,6 +1,4 @@
-import React from 'react';
 import { Document, Page, Text, View, StyleSheet, pdf } from '@react-pdf/renderer';
-import { RoastReport } from '@/types/roast';
 
 const C = {
   coal: '#0D0D0D', ash: '#1A1A1A', smoke: '#2D2D2D',
@@ -24,7 +22,7 @@ function getStyles(config?: any) {
     contactRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 * ratio, marginTop: 6 * ratio },
     contactItem: { fontSize: 9 * ratio, color: '#555555' },
     
-    sectionTitle: { fontSize: 11 * ratio, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 1, marginTop: (config?.sectionSpacing || 15) * ratio, marginBottom: 8 * ratio, borderBottomWidth: 1, borderBottomColor: '#DDDDDD', paddingBottom: 2 * ratio },
+    sectionTitle: { fontSize: 11 * ratio, fontFamily: 'Helvetica-Bold', textTransform: 'uppercase', letterSpacing: 1, marginTop: (config?.sectionSpacing || 15) * ratio, marginBottom: 8 * ratio, borderBottomWidth: 1, borderBottomColor: '#DDDDDD', paddingBottom: 1 * ratio },
     summary: { fontSize: 10 * ratio, lineHeight: 1.4, color: '#333333', marginBottom: 10 * ratio },
     
     expItem: { marginBottom: 12 * ratio },
@@ -40,6 +38,10 @@ function getStyles(config?: any) {
     institution: { fontSize: 10 * ratio, fontFamily: 'Helvetica-Bold' },
     degree: { fontSize: 10 * ratio, color: '#333333' },
     
+    certItem: { marginBottom: 6 * ratio },
+    certName: { fontSize: 10 * ratio, fontFamily: 'Helvetica-Bold' },
+    certIssuer: { fontSize: 10 * ratio, color: '#444444', fontStyle: 'italic' },
+    
     skillsContainer: { flexDirection: 'column', gap: 4 * ratio },
     skillCategoryRow: { flexDirection: 'row', alignItems: 'flex-start', flexWrap: 'wrap' },
     skillCategoryName: { fontSize: 10 * ratio, fontFamily: 'Helvetica-Bold', marginRight: 4 * ratio },
@@ -50,7 +52,7 @@ function getStyles(config?: any) {
 }
 
 export function CVDoc({ data, config }: { data: any; config?: any }) {
-  const { full_name, current_role, summary, experience, education, skills, projects, contact } = data;
+  const { full_name, current_role, summary, experience, education, skills, projects, certifications, contact } = data;
   const styles = getStyles(config);
 
   return (
@@ -63,10 +65,10 @@ export function CVDoc({ data, config }: { data: any; config?: any }) {
           {contact && (
             <View style={styles.contactRow}>
               {contact.email && <Text style={styles.contactItem}>{contact.email}</Text>}
-              {contact.phone && <Text style={styles.contactItem}>• {contact.phone}</Text>}
-              {contact.location && <Text style={styles.contactItem}>• {contact.location}</Text>}
-              {contact.linkedin && <Text style={styles.contactItem}>• {contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
-              {contact.github && <Text style={styles.contactItem}>• {contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
+              {contact.phone && <Text style={styles.contactItem}>| {contact.phone}</Text>}
+              {contact.location && <Text style={styles.contactItem}>| {contact.location}</Text>}
+              {contact.linkedin && <Text style={styles.contactItem}>| {contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
+              {contact.github && <Text style={styles.contactItem}>| {contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
             </View>
           )}
         </View>
@@ -103,10 +105,9 @@ export function CVDoc({ data, config }: { data: any; config?: any }) {
             {experience.map((exp: any, i: number) => (
               <View key={i} style={styles.expItem}>
                 <View style={styles.expHeader}>
-                  <Text style={styles.company}>{exp.company}</Text>
+                  <Text style={styles.company}>{exp.company} <Text style={styles.jobTitle}>- {exp.role}</Text></Text>
                   <Text style={styles.period}>{exp.period}</Text>
                 </View>
-                <Text style={styles.jobTitle}>{exp.role}</Text>
                 {exp.points?.map((point: string, j: number) => (
                   <View key={j} style={styles.bulletPoint}>
                     <Text style={styles.bullet}>•</Text>
@@ -139,6 +140,21 @@ export function CVDoc({ data, config }: { data: any; config?: any }) {
           </View>
         )}
 
+        {certifications && certifications.length > 0 && (
+          <View>
+            <Text style={styles.sectionTitle}>Certifications & Achievements</Text>
+            {certifications.map((cert: any, i: number) => (
+              <View key={i} style={styles.certItem}>
+                <View style={styles.expHeader}>
+                  <Text style={styles.certName}>{cert.name}</Text>
+                  <Text style={styles.period}>{cert.date}</Text>
+                </View>
+                <Text style={styles.certIssuer}>{cert.issuer}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         {projects && projects.length > 0 && (
           <View>
             <Text style={styles.sectionTitle}>Key Projects</Text>
@@ -160,8 +176,8 @@ export function CVDoc({ data, config }: { data: any; config?: any }) {
   );
 }
 
-export async function generateCVPDF(data: any): Promise<Buffer> {
-  const blob = await pdf(<CVDoc data={data} />).toBlob();
+export async function generateCVPDF(data: any, config?: any): Promise<Buffer> {
+  const blob = await pdf(<CVDoc data={data} config={config} />).toBlob();
   return Buffer.from(await blob.arrayBuffer());
 }
 
