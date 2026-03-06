@@ -151,7 +151,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <div className="h-16 w-16 bg-secondary rounded-2xl flex items-center justify-center border border-border shadow-sm shrink-0">
              {job.company?.website ? (
                <Image 
-                 src={`https://img.logo.dev/${job.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
+                 src={`https://img.logo.dev/${job.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                  alt={job.company.name} 
                  className="h-10 w-10 object-contain"
                  onError={(e) => {

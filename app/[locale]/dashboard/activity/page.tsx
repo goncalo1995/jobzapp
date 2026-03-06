@@ -194,7 +194,7 @@ export default function ActivityTrackerPage() {
                       <div className="h-8 w-8 relative bg-secondary rounded overflow-hidden border border-border">
                         {activity.meta.company.website ? (
                           <Image 
-                            src={`https://img.logo.dev/${activity.meta.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
+                            src={`https://img.logo.dev/${activity.meta.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
                             alt={activity.meta.company.name}
                             fill
                             className="object-contain p-1"

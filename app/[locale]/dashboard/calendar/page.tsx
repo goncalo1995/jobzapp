@@ -133,7 +133,7 @@ export default function CalendarPage() {
                            <div className="h-10 w-10 relative bg-secondary rounded-lg overflow-hidden border border-border shrink-0">
                              {interview.job_application.company.website ? (
                                <Image 
-                                 src={`https://img.logo.dev/${interview.job_application.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
+                                 src={`https://img.logo.dev/${interview.job_application.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                                  alt={interview.job_application.company.name}
                                  fill
                                  className="object-contain p-1"
@@ -196,7 +196,7 @@ export default function CalendarPage() {
                         <div className="h-12 w-12 relative bg-background rounded-xl p-2 border border-border shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                              {interview.job_application.company.website ? (
                                <Image 
-                                 src={`https://img.logo.dev/${interview.job_application.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
+                                 src={`https://img.logo.dev/${interview.job_application.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                                  alt={interview.job_application.company.name}
                                  fill
                                  className="object-contain p-2"
