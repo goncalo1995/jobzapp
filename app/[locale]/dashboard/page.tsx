@@ -3,6 +3,7 @@ import { Link, redirect } from '@/i18n/navigation';
 import { Briefcase, FileText, CheckCircle, Clock, ArrowRight, Zap, User, Activity } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { routing } from '@/i18n/routing';
+import Image from 'next/image';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -96,14 +97,12 @@ export default async function DashboardPage() {
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 relative bg-secondary rounded-lg overflow-hidden border border-border shrink-0">
                         {app.company?.website ? (
-                          <img 
-                            src={`https://img.logo.dev/${app.company.website}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
+                          <Image 
+                            src={`https://img.logo.dev/${app.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
                             alt={app.company.name}
+                            width={100}
+                            height={100}
                             className="w-full h-full object-contain p-1"
-                            onError={(e) => {
-                              (e.target as any).style.display = 'none';
-                              (e.target as any).nextSibling.style.display = 'flex';
-                            }}
                           />
                         ) : null}
                         <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground uppercase text-xs" style={{ display: app.company?.website ? 'none' : 'flex' }}>
@@ -111,7 +110,7 @@ export default async function DashboardPage() {
                         </div>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-foreground">{app.position || app.job_title}</p>
+                        <p className="text-sm font-bold text-foreground">{app.position}</p>
                         <p className="text-xs text-muted-foreground">{app.company?.name || app.company_name_denormalized}</p>
                       </div>
                     </div>

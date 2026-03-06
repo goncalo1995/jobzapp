@@ -11,10 +11,10 @@ import {
   Briefcase, 
   Calendar as CalendarIcon, 
   FileText, 
-  Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/jobs', label: 'Applications', icon: Briefcase },
   { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarIcon },
   { href: '/dashboard/cvs', label: 'Resumes', icon: FileText },
+  { href: '/dashboard/activity', label: 'Activity', icon: Activity },
 ];
 
 export function Sidebar() {
@@ -82,10 +83,6 @@ export function Sidebar() {
         </nav>
 
         <div className="p-3 border-t border-border space-y-0.5">
-          <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg group">
-            <Settings className="h-4 w-4 group-hover:rotate-45 transition-transform" />
-            Settings
-          </button>
           <button 
             onClick={handleSignOut}
             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors rounded-lg"

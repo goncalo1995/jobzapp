@@ -18,7 +18,7 @@ export default function NewJobPage() {
   
   const [cvs, setCvs] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    job_title: '',
+    position: '',
     company_name: '',
     company_website: '',
     job_url: '',
@@ -46,7 +46,7 @@ export default function NewJobPage() {
   }, [supabase]);
 
   async function handleCreate() {
-    if (!formData.job_title || !formData.company_name) {
+    if (!formData.position || !formData.company_name) {
       toast.error('Job title and Company name are required');
       return;
     }
@@ -79,7 +79,7 @@ export default function NewJobPage() {
           user_id: user.id,
           company_id: company.id,
           company_name_denormalized: formData.company_name,
-          position: formData.job_title,
+          position: formData.position,
           job_url: formData.job_url || null,
           job_description: formData.description || null,
           status: formData.status as any,
@@ -128,8 +128,8 @@ export default function NewJobPage() {
                 <div className="relative">
                   <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input 
-                    value={formData.job_title}
-                    onChange={(e) => setFormData(prev => ({ ...prev, job_title: e.target.value }))}
+                    value={formData.position}
+                    onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                     placeholder="e.g. Senior Frontend Developer"
                     className="pl-10"
                   />

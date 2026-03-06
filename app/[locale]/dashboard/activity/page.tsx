@@ -44,9 +44,9 @@ export default function ActivityTrackerPage() {
 
       const [interviewsRes, offersRes, interactionsRes] = await Promise.all([
         supabase.from('interviews')
-          .select('*, job_application:job_applications(id, job_title, company:companies(id, name, website))'),
+          .select('*, job_application:job_applications(id, position, company:companies(id, name, website))'),
         supabase.from('job_offers')
-          .select('*, job_application:job_applications(id, job_title, company:companies(id, name, website))'),
+          .select('*, job_application:job_applications(id, position, company:companies(id, name, website))'),
         supabase.from('interactions')
           .select('*, contact:contacts(id, name, role)')
           .eq('created_by', user.id)
@@ -62,7 +62,7 @@ export default function ActivityTrackerPage() {
             type: 'interview',
             date: i.created_at || i.interview_date,
             title: `Scheduled ${i.type} Interview`,
-            description: i.notes || `Interview for ${i.job_application?.job_title}`,
+            description: i.notes || `Interview for ${i.job_application?.position}`,
             meta: {
               company: i.job_application?.company,
               appId: i.job_application?.id,
@@ -80,7 +80,7 @@ export default function ActivityTrackerPage() {
             type: 'offer',
             date: o.created_at,
             title: `Received Offer`,
-            description: o.negotiation_notes || `Offer for ${o.job_application?.job_title}. Status: ${o.status}`,
+            description: o.negotiation_notes || `Offer for ${o.job_application?.position}. Status: ${o.status}`,
             meta: {
               company: o.job_application?.company,
               appId: o.job_application?.id,

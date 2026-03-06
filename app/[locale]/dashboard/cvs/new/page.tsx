@@ -357,36 +357,99 @@ export default function NewCVPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SectionContainer title="Skills" icon={<Code2 className="h-4 w-4" />}>
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-secondary/20 rounded-lg border border-border/50">
-                  {cvData.skills?.map((skill: string, idx: number) => (
-                    <Badge key={idx} variant="secondary" className="flex items-center gap-1 py-1">
-                      {skill}
-                      <button onClick={() => {
-                        const newSkills = [...cvData.skills];
-                        newSkills.splice(idx, 1);
-                        setCvData({...cvData, skills: newSkills});
-                      }}>
-                        <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Add a skill..." 
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = (e.target as HTMLInputElement).value.trim();
-                        if (val && !cvData.skills?.includes(val)) {
-                          setCvData({...cvData, skills: [...(cvData.skills || []), val]});
-                          (e.target as HTMLInputElement).value = '';
-                        }
-                      }
-                    }}
-                    className="h-8 text-sm"
-                  />
-                </div>
+              <div className="space-y-6">
+                {cvData.skills?.map((skillGroup: any, groupIdx: number) => {
+                  if (typeof skillGroup === 'string') {
+                    // Legacy flat skill string
+                    return (
+                      <Badge key={groupIdx} variant="secondary" className="flex items-center gap-1 py-1 w-max mb-2">
+                        {skillGroup}
+                        <button onClick={() => {
+                          const newSkills = [...cvData.skills];
+                          newSkills.splice(groupIdx, 1);
+                          setCvData({...cvData, skills: newSkills});
+                        }}>
+                          <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
+                        </button>
+                      </Badge>
+                    );
+                  }
+                  // Grouped skill object: { category: string, items: string[] }
+                  return (
+                    <div key={groupIdx} className="space-y-3 bg-secondary/10 p-4 rounded-lg border border-border/50">
+                      <div className="flex items-center justify-between">
+                        <Input 
+                          value={skillGroup.category || ''} 
+                          onChange={(e) => {
+                            const newSkills = [...cvData.skills];
+                            newSkills[groupIdx].category = e.target.value;
+                            setCvData({...cvData, skills: newSkills});
+                          }}
+                          className="h-8 text-sm font-bold bg-background w-1/2"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                             const newSkills = [...cvData.skills];
+                             newSkills.splice(groupIdx, 1);
+                             setCvData({...cvData, skills: newSkills});
+                          }}
+                          className="text-muted-foreground hover:text-destructive h-8 px-2"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 min-h-[32px]">
+                        {skillGroup.items?.map((item: string, itemIdx: number) => (
+                          <Badge key={itemIdx} variant="secondary" className="flex items-center gap-1 py-1">
+                            {item}
+                            <button onClick={() => {
+                              const newSkills = [...cvData.skills];
+                              newSkills[groupIdx].items.splice(itemIdx, 1);
+                              setCvData({...cvData, skills: newSkills});
+                            }}>
+                              <Trash2 className="h-2.5 w-2.5 hover:text-destructive" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                         <Input 
+                           placeholder={`Add a skill to ${skillGroup.category || 'this category'}...`}
+                           onKeyDown={(e) => {
+                             if (e.key === 'Enter') {
+                               const val = (e.target as HTMLInputElement).value.trim();
+                               if (val) {
+                                 const newSkills = [...cvData.skills];
+                                 if (!newSkills[groupIdx].items) newSkills[groupIdx].items = [];
+                                 if (!newSkills[groupIdx].items.includes(val)) {
+                                   newSkills[groupIdx].items.push(val);
+                                   setCvData({...cvData, skills: newSkills});
+                                 }
+                                 (e.target as HTMLInputElement).value = '';
+                               }
+                             }
+                           }}
+                           className="h-8 text-sm"
+                         />
+                      </div>
+                    </div>
+                  );
+                })}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full border-dashed"
+                  onClick={() => {
+                     const newSkills = [...(cvData.skills || [])];
+                     // Only add object type since we are migrating to them
+                     newSkills.push({ category: 'New Category', items: [] });
+                     setCvData({...cvData, skills: newSkills});
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Add Skill Category
+                </Button>
               </div>
             </SectionContainer>
 

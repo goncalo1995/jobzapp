@@ -28,7 +28,7 @@ import { Interview } from '@/types';
 type InterviewWithExt = Interview & {
   job_application: {
     id: string;
-    job_title: string;
+    position: string;
     company: {
       id: string;
       name: string;
@@ -51,7 +51,7 @@ export default function CalendarPage() {
           *,
           job_application:job_applications (
             id,
-            job_title,
+            position,
             company:companies (
               id,
               name,
@@ -148,7 +148,7 @@ export default function CalendarPage() {
                              </div>
                            </div>
                            <div>
-                             <h5 className="font-bold text-sm leading-tight">{interview.job_application.job_title}</h5>
+                             <h5 className="font-bold text-sm leading-tight">{interview.job_application.position}</h5>
                              <p className="text-xs text-muted-foreground">{interview.job_application.company.name}</p>
                            </div>
                         </div>
@@ -211,7 +211,7 @@ export default function CalendarPage() {
                              </div>
                         </div>
                         <div className="space-y-1">
-                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{interview.job_application.job_title}</h4>
+                          <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{interview.job_application.position}</h4>
                           <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1 font-medium text-foreground/70"><Building2 className="h-3 w-3" /> {interview.job_application.company.name}</span>
                             <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" /> {new Date(interview.interview_date!).toLocaleDateString()}</span>
@@ -252,7 +252,7 @@ export default function CalendarPage() {
           </Card>
 
           {/* Tips/Widget Card */}
-          <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-2xl p-6 flex items-center gap-6">
+          {/* <div className="bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 rounded-2xl p-6 flex items-center gap-6">
              <div className="h-16 w-16 bg-primary/20 rounded-2xl flex items-center justify-center shrink-0">
                <Star className="h-8 w-8 text-primary" />
              </div>
@@ -260,7 +260,7 @@ export default function CalendarPage() {
                <h4 className="font-bold text-foreground">Next Major Step</h4>
                <p className="text-sm text-foreground/70">Your upcoming Portfolio Review tomorrow is with 2 senior designers. Make sure to have your Figma links ready!</p>
              </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
