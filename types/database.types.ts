@@ -219,6 +219,7 @@ export type Database = {
           follow_up_date: string | null
           id: string
           interaction_date: string | null
+          job_application_id: string | null
           notes: string | null
           type: Database["public"]["Enums"]["interaction_type"]
         }
@@ -230,6 +231,7 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           interaction_date?: string | null
+          job_application_id?: string | null
           notes?: string | null
           type: Database["public"]["Enums"]["interaction_type"]
         }
@@ -241,6 +243,7 @@ export type Database = {
           follow_up_date?: string | null
           id?: string
           interaction_date?: string | null
+          job_application_id?: string | null
           notes?: string | null
           type?: Database["public"]["Enums"]["interaction_type"]
         }
@@ -250,6 +253,13 @@ export type Database = {
             columns: ["contact_id"]
             isOneToOne: false
             referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "interactions_job_application_id_fkey"
+            columns: ["job_application_id"]
+            isOneToOne: false
+            referencedRelation: "job_applications"
             referencedColumns: ["id"]
           },
         ]
@@ -360,6 +370,7 @@ export type Database = {
           source_board: string | null
           status: Database["public"]["Enums"]["application_status"] | null
           tags: string[] | null
+          updated_at: string | null
           user_id: string | null
         }
         Insert: {
@@ -390,6 +401,7 @@ export type Database = {
           source_board?: string | null
           status?: Database["public"]["Enums"]["application_status"] | null
           tags?: string[] | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Update: {
@@ -420,6 +432,7 @@ export type Database = {
           source_board?: string | null
           status?: Database["public"]["Enums"]["application_status"] | null
           tags?: string[] | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -537,6 +550,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          ai_credits: number | null
           created_at: string | null
           default_cv_id: string | null
           email: string | null
@@ -548,6 +562,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          ai_credits?: number | null
           created_at?: string | null
           default_cv_id?: string | null
           email?: string | null
@@ -559,6 +574,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          ai_credits?: number | null
           created_at?: string | null
           default_cv_id?: string | null
           email?: string | null

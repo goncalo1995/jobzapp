@@ -76,7 +76,7 @@ export default async function PrivacyPolicyPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {[
-                    { name: 'Stripe', purpose: 'Payment Processing' },
+                    { name: 'Polar', purpose: 'Payment Processing' },
                     { name: 'Supabase', purpose: 'Database & Authentication' },
                     { name: 'Vercel', purpose: 'Hosting & Analytics' },
                     { name: 'Resend', purpose: 'Transactional Emails' },

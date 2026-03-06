@@ -14,7 +14,8 @@ import {
   LogOut,
   Menu,
   X,
-  Activity
+  Activity,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -83,6 +84,13 @@ export function Sidebar() {
         </nav>
 
         <div className="p-3 border-t border-border space-y-0.5">
+          <Link href="/dashboard/settings">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg group">
+              <Settings className="h-4 w-4 group-hover:rotate-45 transition-transform" />
+              Settings
+            </button>
+          </Link>
+
           <button 
             onClick={handleSignOut}
             className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-destructive transition-colors rounded-lg"

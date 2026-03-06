@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
+import { TAILOR_SYSTEM_PROMPT } from '@/lib/prompts';
 
 export default function NewCVPage() {
   const router = useRouter();
@@ -71,13 +72,65 @@ export default function NewCVPage() {
     }
     setTailoring(true);
     try {
-      const res = await fetch('/api/cv/tailor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: cvData, jobDescription }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      const savedKey = localStorage.getItem("openrouter_key");
+      let data;
+      
+      if (savedKey) {
+        // Use BYOK - Call OpenRouter directly from frontend
+        const token = savedKey.replace(/['"]+/g, '').trim();
+        const userPrompt = `USER CAREER DATA:\n${JSON.stringify(cvData, null, 2)}\n\nJOB DESCRIPTION:\n${jobDescription}\n\nPlease tailor this CV data to the job description above.`;
+        
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "JobZapp",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "anthropic/claude-3.5-sonnet",
+            response_format: { type: "json_object" },
+            messages: [
+              { role: "system", content: TAILOR_SYSTEM_PROMPT },
+              { role: "user", content: userPrompt }
+            ]
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('OpenRouter API Error: ' + await response.text());
+        }
+        
+        const openRouterData = await response.json();
+        const content = openRouterData.choices[0].message.content;
+        
+        // Parse JSON
+        const clean = content.replace(/```json\n?|\n?```/g, '').trim();
+        let tailoredData;
+        try {
+          tailoredData = JSON.parse(clean);
+        } catch {
+          const match = clean.match(/\{[\s\S]*\}/);
+          if (match) {
+            tailoredData = JSON.parse(match[0]);
+          } else {
+            throw new Error('AI response was not valid JSON');
+          }
+        }
+        
+        data = { tailoredData };
+      } else {
+        // Fallback: use internal API and deduct AI credits
+        const res = await fetch('/api/cv/tailor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile: cvData, jobDescription }),
+        });
+        data = await res.json();
+        if (data.error) throw new Error(data.error);
+      }
+
       setCvData(data.tailoredData);
       setFormData(prev => ({ ...prev, target_role: data.tailoredData.current_role || prev.target_role }));
       toast.success('CV tailored successfully!');
