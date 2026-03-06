@@ -2,72 +2,251 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
-import { ArrowRight, Zap, Target, BookOpen, ShieldCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { ArrowRight, Zap, Target, BookOpen, ShieldCheck, Sparkles, Rocket, Clock, CheckCircle2 } from 'lucide-react';
 
 export default function LandingPage() {
+  const t = useTranslations('Pages.home');
+
   return (
-    <div className="w-full min-h-screen flex flex-col items-center bg-[#0D0D0D] text-[#F5F0E8] selection:bg-primary selection:text-white">
+    <div className="w-full min-h-screen flex flex-col items-center bg-background text-foreground selection:bg-primary selection:text-primary-foreground overflow-x-hidden">
       {/* Hero Section */}
-      <header className="w-full max-w-5xl mx-auto px-6 py-24 md:py-32 flex flex-col items-center text-center gap-8 relative z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl h-96 bg-primary/5 blur-[120px] rounded-full -z-10" />
+      <header className="w-full max-w-6xl mx-auto px-6 pt-32 pb-40 flex flex-col items-center text-center gap-10 relative">
+        {/* Animated Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[500px] bg-primary/10 blur-[120px] rounded-full -z-10 animate-pulse" />
         
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold tracking-[0.2em] uppercase">
-          <Zap className="h-4 w-4" /> Phase 1: MVP under construction
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black tracking-[0.3em] uppercase animate-in fade-in slide-in-from-bottom-4 duration-1000">
+          <Sparkles className="h-4 w-4" /> {t('tagline')}
         </div>
         
-        <h1 className="text-5xl sm:text-6xl md:text-8xl font-heading uppercase tracking-tighter leading-[0.9]">
+        <h1 className="text-6xl sm:text-7xl md:text-9xl font-heading font-black uppercase tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
           Stop tracking in <br/>
-          <span className="text-primary italic">spreadsheets</span>.
+          <span className="text-primary italic relative drop-shadow-[0_0_15px_rgba(0,69,255,0.3)]">
+            spreadsheets
+            <div className="absolute -bottom-2 left-0 w-full h-2 bg-primary/20 -rotate-1 -z-10" />
+          </span>.
         </h1>
         
-        <p className="text-lg md:text-2xl text-[#F5F0E8]/50 font-mono leading-relaxed max-w-2xl px-4">
-          JobZapp: The high-speed job application tracker. Manage your career with AI-powered precision.
+        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed max-w-3xl px-4 animate-in fade-in slide-in-from-bottom-12 duration-1000 delay-300">
+          {t('description')}
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+        <div className="flex flex-col sm:flex-row gap-6 mt-4 animate-in fade-in slide-in-from-bottom-16 duration-1000 delay-500">
           <Link 
             href="/dashboard"
-            className="px-8 py-5 bg-primary text-[#0D0D0D] text-lg uppercase tracking-[0.2em] font-black hover:bg-primary/80 transition-all flex items-center justify-center gap-3 group shadow-[0_0_40px_rgba(0,69,255,0.4)] hover:shadow-[0_0_60px_rgba(0,69,255,0.6)] transform hover:-translate-y-1 active:translate-y-0"
+            className="px-10 py-6 bg-primary text-primary-foreground text-lg uppercase tracking-[0.2em] font-black hover:bg-primary/90 transition-all flex items-center justify-center gap-4 group rounded-2xl shadow-[0_20px_40px_rgba(0,69,255,0.3)] hover:shadow-[0_25px_60px_rgba(0,69,255,0.4)] transform hover:-translate-y-1.5 active:translate-y-0"
           >
-            ENTER DASHBOARD <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
+            Get Started Free <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
           </Link>
+          <Link 
+            href="/blog"
+            className="px-10 py-6 bg-secondary/10 border border-border text-foreground text-lg uppercase tracking-[0.2em] font-black hover:bg-secondary/20 transition-all flex items-center justify-center gap-4 group rounded-2xl backdrop-blur-sm"
+          >
+            Read the Blog <BookOpen className="h-6 w-6 group-hover:rotate-12 transition-transform" />
+          </Link>
+        </div>
+
+        {/* Floating Badges */}
+        <div className="mt-20 flex flex-wrap justify-center gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest"><CheckCircle2 className="h-4 w-4" /> AI Optimized</div>
+           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest"><Clock className="h-4 w-4" /> High Speed</div>
+           <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-widest"><ShieldCheck className="h-4 w-4" /> Privacy First</div>
         </div>
       </header>
 
-      {/* Simplified Info */}
-      <section className="w-full max-w-5xl mx-auto px-6 py-24 grid grid-cols-1 md:grid-cols-3 gap-12 border-t border-white/5">
-        <div className="space-y-4">
-          <Target className="h-8 w-8 text-primary" />
-          <h3 className="text-xl font-bold uppercase tracking-wide">Job Tracking</h3>
-          <p className="text-[#F5F0E8]/50 font-mono text-sm leading-relaxed">
-            Manage your applications, interviews, and offers in one place. No more lost tabs.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <BookOpen className="h-8 w-8 text-primary" />
-          <h3 className="text-xl font-bold uppercase tracking-wide">CV Management</h3>
-          <p className="text-[#F5F0E8]/50 font-mono text-sm leading-relaxed">
-            Store and tailor multiple versions of your CV. AI-assisted keyword optimization.
-          </p>
-        </div>
-        <div className="space-y-4">
-          <ShieldCheck className="h-8 w-8 text-primary" />
-          <h3 className="text-xl font-bold uppercase tracking-wide">Interview Prep</h3>
-          <p className="text-[#F5F0E8]/50 font-mono text-sm leading-relaxed">
-            Structured preparation for every round. Record feedback and track your success.
-          </p>
+      {/* Features Grid */}
+      <section className="w-full bg-secondary/5 border-y border-border py-32 relative overflow-hidden">
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-primary/5 blur-[120px] rounded-full animate-pulse" />
+        
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <header className="mb-20 text-center space-y-4">
+            <h2 className="text-4xl md:text-5xl font-heading font-black uppercase tracking-tight">Everything you need to <span className="text-primary italic">win</span>.</h2>
+            <p className="text-muted-foreground font-medium max-w-xl mx-auto italic leading-relaxed font-mono text-sm uppercase tracking-widest">"{t('aboutDescription')}"</p>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <Target className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.tracking.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.tracking.description')}
+              </p>
+            </div>
+
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <Rocket className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.cv.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.cv.description')}
+              </p>
+            </div>
+
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <Zap className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.prep.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.prep.description')}
+              </p>
+            </div>
+
+            {/* Added Features */}
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <ArrowRight className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.analytics.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.analytics.description')}
+              </p>
+            </div>
+
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <Sparkles className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.automation.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.automation.description')}
+              </p>
+            </div>
+
+            <div className="group p-10 bg-background border border-border/50 rounded-3xl hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
+              <div className="h-14 w-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
+                <Clock className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-2xl font-heading font-black uppercase tracking-tight mb-4 group-hover:text-primary transition-colors">
+                {t('features.calendar.title')}
+              </h3>
+              <p className="text-muted-foreground font-medium leading-relaxed italic text-sm">
+                {t('features.calendar.description')}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Footer Placeholder */}
-      <footer className="w-full px-6 py-20 border-t border-white/5 text-center mt-auto">
-        <div className="text-3xl font-heading text-primary tracking-wide uppercase">
-          Job<span className="text-[#F5F0E8]">Zapp</span>
+      {/* Pricing Teaser */}
+      <section className="w-full py-40 bg-background">
+        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
+           <header className="mb-16 text-center">
+             <div className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4">Pricing</div>
+             <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight mb-6 leading-none">
+               Core is <span className="text-primary italic">Free</span>.
+             </h2>
+             <p className="text-muted-foreground font-medium leading-relaxed max-w-lg mx-auto italic">
+                Get full access to all job tracking, CV storage, and interview preparation features for $0.
+             </p>
+           </header>
+           
+           <div className="p-8 bg-secondary/5 border border-border rounded-3xl flex flex-col md:flex-row items-center gap-12 w-full max-w-3xl">
+              <div className="flex-1 space-y-4">
+                 <h4 className="text-xl font-heading font-black uppercase tracking-tight">AI Copilot Beta</h4>
+                 <p className="text-xs text-muted-foreground leading-relaxed italic">
+                   Request early access to our AI features: CV tailoring, mock interviews, and company research.
+                 </p>
+              </div>
+              <Link 
+                href="/pricing"
+                className="px-8 py-4 bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary/90 transition-all flex items-center gap-3 shadow-lg shadow-primary/20"
+              >
+                View Plans <ArrowRight className="h-4 w-4" />
+              </Link>
+           </div>
         </div>
-        <p className="text-[9px] text-[#F5F0E8]/20 tracking-[0.3em] font-bold uppercase mt-4">
-          Built for the modern job market.
-        </p>
-      </footer>
+      </section>
+
+      {/* Why JobZapp */}
+      <section className="w-full py-32 bg-secondary/10 border-y border-border">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center gap-16">
+            <div className="flex-1 space-y-8">
+              <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight leading-none">
+                Built for <br/><span className="text-primary italic">Professionals</span>.
+              </h2>
+              <p className="text-lg text-muted-foreground font-medium leading-relaxed max-w-xl">
+                We didn't build another spreadsheet. We built a high-performance engine to accelerate your career. No ads, no fluff, just speed.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8">
+                <div className="space-y-2">
+                   <div className="h-1 text-primary w-12 rounded-full mb-4" />
+                   <h4 className="font-heading font-black uppercase tracking-tight">Zero Bloat</h4>
+                   <p className="text-xs text-muted-foreground">Lightning fast navigation and instant updates.</p>
+                </div>
+                <div className="space-y-2">
+                   <div className="h-1 text-primary w-12 rounded-full mb-4" />
+                   <h4 className="font-heading font-black uppercase tracking-tight">Private & Secure</h4>
+                   <p className="text-xs text-muted-foreground">Your career data is and will always be private.</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 relative">
+               {/* Visual metaphor for speed */}
+               <div className="relative p-12 bg-background border border-border rounded-[40px] shadow-2xl overflow-hidden group">
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="space-y-6 relative z-10">
+                     <div className="flex items-center gap-4 border-b border-border pb-6">
+                        <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground font-black italic">!</div>
+                        <div className="flex-1">
+                           <div className="h-2 w-32 bg-secondary rounded-full mb-2" />
+                           <div className="h-2 w-20 bg-secondary/50 rounded-full" />
+                        </div>
+                     </div>
+                     <div className="space-y-4">
+                        <div className="h-3 w-full bg-secondary/20 rounded-full" />
+                        <div className="h-3 w-4/5 bg-secondary/20 rounded-full" />
+                        <div className="h-3 w-3/5 bg-secondary/20 rounded-full" />
+                     </div>
+                     <div className="pt-6 flex justify-end">
+                        <div className="px-6 py-2 bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg">Accelerated</div>
+                     </div>
+                  </div>
+                  {/* Motion lines */}
+                  <div className="absolute top-1/4 right-0 w-32 h-[1px] bg-gradient-to-r from-transparent to-primary/30 translate-x-32 group-hover:-translate-x-full transition-transform duration-1000" />
+                  <div className="absolute top-1/2 right-0 w-48 h-[1px] bg-gradient-to-r from-transparent to-primary/30 translate-x-32 group-hover:-translate-x-full transition-transform duration-700 delay-100" />
+                  <div className="absolute top-3/4 right-0 w-24 h-[1px] bg-gradient-to-r from-transparent to-primary/30 translate-x-32 group-hover:-translate-x-full transition-transform duration-1000 delay-200" />
+               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="w-full max-w-5xl mx-auto px-6 py-40">
+        <div className="relative p-12 md:p-20 bg-primary rounded-[40px] overflow-hidden text-center flex flex-col items-center shadow-[0_40px_100px_rgba(0,69,255,0.2)]">
+          {/* Visual fluff */}
+          <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-white/10 blur-[100px] rounded-full" />
+          <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-black/10 blur-[100px] rounded-full" />
+          
+          <h2 className="text-4xl md:text-6xl font-heading font-black text-primary-foreground uppercase tracking-tight leading-none mb-8 relative z-10">
+            Ready to accelerate <br/> your search?
+          </h2>
+          <p className="text-primary-foreground/80 font-medium text-lg md:text-xl max-w-xl mb-12 relative z-10">
+            Join thousands of professionals using JobZapp to land their next role with precision and speed.
+          </p>
+          <Link 
+            href="/dashboard"
+            className="px-12 py-6 bg-white text-primary text-lg uppercase tracking-[0.2em] font-black hover:bg-white/90 transition-all flex items-center justify-center gap-4 group rounded-2xl relative z-10"
+          >
+            Get Started Now <ArrowRight className="h-6 w-6 group-hover:translate-x-2 transition-transform" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

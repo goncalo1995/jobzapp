@@ -18,154 +18,114 @@
   },
   "Pages": {
     "home": {
-      "title": "Helena Colaço | Artist",
-      "description": "Helena Colaço is an artist based in Lisbon, Portugal. She creates art that explores the relationship between color, form, and emotion.",
-      "tagline": "Artist · Lisbon, Portugal",
-      "aboutTitle": "About the Artist",
-      "aboutDescription": "With a life shaped by artistic exploration, from theatre to painting, photography, and poetry, she has built a rich and multidisciplinary creative path. Her work draws deeply from personal experience, performance, and visual storytelling, continually evolving between Lisbon and the south of Portugal.",
-      "viewBio": "View Bio",
-      "artwork": {
-        "drawing": {
-          "title": "Drawing",
-          "description": "Intimate studies in charcoal, graphite and ink that capture the essence of a moment."
+      "title": "JobZapp | High-Speed Job Application Tracker",
+      "description": "Stop tracking in spreadsheets. JobZapp is the high-speed job application tracker designed for the modern market. Manage your career with AI-powered precision.",
+      "tagline": "Career Accelerator",
+      "aboutTitle": "About JobZapp",
+      "aboutDescription": "JobZapp was built to solve the chaos of modern job hunting. We believe that tracking your career should be as fast and precise as the roles you're applying for.",
+      "viewBio": "Learn More",
+      "features": {
+        "tracking": {
+          "title": "Application Hub",
+          "description": "Centralize every application, interview, and offer. Real-time status tracking and automated follow-up reminders."
         },
-        "painting": {
-          "title": "Painting",
-          "description": "Paintings that explore the relationship between color, form, and emotion."
+        "cv": {
+          "title": "CV Management",
+          "description": "Store and tailor multiple versions of your CV. AI-assisted keyword optimization for every role."
         },
-        "photography": {
-          "title": "Photography",
-          "description": "Photographs that capture the essence of a moment."
+        "prep": {
+          "title": "Interview Prep",
+          "description": "Prepare for every round with structured feedback loops. Record every interaction and stay top-of-mind."
         },
-        "poem": {
-          "title": "Poetry",
-          "description": "Words shaped into small vessels of feeling, written alongside the visual work."
+        "analytics": {
+          "title": "Smart Analytics",
+          "description": "Visual insights into your application funnel. Identify bottlenecks and optimize your conversion from application to offer."
+        },
+        "automation": {
+          "title": "AI Copilot",
+          "description": "Automated CV tailoring and interview question generation based on specific job descriptions. (Beta)"
+        },
+        "calendar": {
+          "title": "Interview Calendar",
+          "description": "Sync your interviews with your favorite calendar. Never miss a meeting with built-in scheduling."
         }
-      },
-      "newsletter": {
-        "title": "Stay in Touch",
-        "description": "Subscribe to our newsletter to stay updated with the latest creations, exhibitions and events.",
-        "success": "Thank you for subscribing!",
-        "fields": {
-          "namePlaceholder": "Your name",
-          "emailPlaceholder": "Your email"
-        },
-        "submit": "Subscribe",
-        "errors": {
-          "missingFields": "Name and email are required",
-          "emailInUse": "This email is already subscribed",
-          "unknown": "An unknown error occurred"
-        }
-      },
-      "contacts": {
-        "title": "Get in Touch",
-        "description": "For commissions, collaborations or just to say hello."
-      }
-    },
-    "bio": {
-      "title": "Bio",
-      "description": "Bio Page Description",
-      "content": {
-        "name": "Helena Colaço Salazar",
-        "p1": "From an early age, she revealed a strong interest in the arts, enjoying drawing, photography, dance and other sports. At the age of thirteen she lost her father, an event that spontaneously led her to write poetry and draw, later choosing the arts field in high school.",
-        "p2": "She began her career in theatre, where she worked as an actress for eleven years.",
-        "p3": "In 2005 she returned to drawing through the development of the character Kelly, from Wayne Jordan’s play The Drowned World. From this experience came the public exhibition The Imaginary World of Kelly. Later, in 2010, she presented her first solo painting exhibition, Appearances, also inspired by a theatre play with the same name, staged at Sociedade de Instrução Guilherme Cossoul.",
-        "p4": "Her desire to explore new forms of expression beyond acting led her to study New Painting Techniques at the National Society of Fine Arts, as well as Photography at the Portuguese Institute of Photography.",
-        "p5": "She completed internships as a photojournalist at the newspapers Público and i, and also photographed theatre plays, concerts, vernissages, architecture and developed authorial photography projects.",
-        "p6": "In 2014 she moved to Tróia, where she lived for three years working on the concept of Identity, which later took her on a nomadic path between 2017 and 2023. That year she returned to Tróia and began preparing her next solo painting exhibition, From My Mother Paintings, presented at Fábrica do Braço de Prata, in Lisbon, in 2025. Over these years she also participated in several collective exhibitions of photography and painting.",
-        "p7": "Today she divides her time between Lisbon and the south of Portugal, continuously expanding her creative practice as a visual artist.",
-        "viewWork": "View Work",
-        "contact": "Contact"
       }
     },
     "header": {
-      "brand": "Helena Colaço",
+      "brand": "JobZapp",
       "nav": {
-        "bio": "Bio",
-        "work": "Work",
-        "contact": "Contact"
-      },
-      "work": {
-        "drawings": "Drawings",
-        "paintings": "Paintings",
-        "photography": "Photography",
-        "poetry": "Poetry"
-      },
-      "a11y": {
-        "openMenu": "Open menu",
-        "closeMenu": "Close menu"
+        "blog": "Blog",
+        "pricing": "Pricing",
+        "dashboard": "Dashboard"
       }
-    },
-    "ArtworkDetail": {
-      "buy": "Buy",
-      "gallery": "Gallery"
-    },
-    "collection": {
-      "noWorks": "No works in this collection yet."
     },
     "footer": {
       "aria": {
         "navigation": "Footer navigation"
       },
       "links": {
-        "bio": "Bio",
-        "drawings": "Drawings",
-        "paintings": "Paintings",
-        "photography": "Photography",
-        "poetry": "Poetry",
+        "blog": "Blog",
+        "pricing": "Pricing",
         "privacyPolicy": "Privacy Policy"
       },
-      "headline": "Through lines, colors, lenses, and words — a journey of self-expression, where each stroke, click, and verse unveils a new dimension of the soul.",
-      "copyright": "© {year} Helena Colaço. All rights reserved."
+      "headline": "Built for the modern job market. Accelerate your career with precision tracking.",
+      "copyright": "© {year} JobZapp. All rights reserved."
     },
-    "cookieConsent": {
-      "title": "Cookies & analytics",
-      "description": "We use cookies for basic functionality and, with your permission, analytics to improve this website.",
-      "privacyLink": "Read the Privacy Policy",
-      "accept": "Accept analytics",
-      "reject": "Reject"
+    "pricing": {
+      "title": "Simple Pricing",
+      "subtitle": "Everything you need to land your next role, for free.",
+      "free": "Free",
+      "aiBeta": "AI Beta",
+      "coreFeatures": "Core Features",
+      "aiFeatures": "AI Copilot features",
+      "betaDescription": "AI features are currently in a closed beta. Request access to start tailoring your CVs with AI-powered precision.",
+      "ctaFree": "Get Started for Free",
+      "ctaBeta": "Request Beta Access",
+      "features": {
+        "unlimitedJobs": "Unlimited Job Applications",
+        "cvVault": "CV Vault (Save all versions)",
+        "trackInterviews": "Full Interview Tracking",
+        "dashboard": "Personal Dashboard",
+        "cvTailoring": "AI CV Tailoring (Beta)",
+        "mockInterviews": "AI Mock Interviews (Beta)",
+        "smartResearch": "AI Company Research (Beta)"
+      }
     },
     "privacyPolicy": {
       "meta": {
-        "title": "Privacy Policy | aiRoast.app",
-        "description": "We collect almost nothing. No accounts, no email, pitch data discarded immediately."
+        "title": "Privacy Policy | JobZapp",
+        "description": "We treat your professional data with the highest security. No selling, no prying, just tracking."
       },
       "title": "Privacy Policy",
       "lastUpdated": "Last updated: {date}",
       "hero": {
-        "weDontCollect": "We don't want your data. Really.",
-        "subtext": "aiRoast is built on a simple principle: your pitch is yours. We process it, roast it, and forget it."
+        "weDontCollect": "Your data is yours. Period.",
+        "subtext": "JobZapp is built to help you land your dream job, not to harvest your data. We only store what you need to track your progress."
       },
       "sections": {
         "controller": {
           "title": "Who We Are",
-          "body": "aiRoast.app is operated by Cereja Investment, Lda., registered at Travessa do Girassol, n61 3D, 2775-811 Carcavelos, Portugal. For privacy inquiries: privacy@airoast.app",
+          "body": "JobZapp is operated by Cereja Investment, Lda., registered at Travessa do Girassol, n61 3D, 2775-811 Carcavelos, Portugal. For privacy inquiries: privacy@jobzapp.com",
           "registered": "Registered in Portugal"
         },
         "corePromise": {
           "title": "Our Core Promise",
-          "noAccounts": "🔐 No accounts required — ever.",
-          "noEmail": "📧 No email collection — Stripe handles payments, not us.",
-          "noStorage": "🗑️ Pitch data discarded immediately after roast generation.",
-          "lifetime": "Your data lives only as long as it takes to generate your PDF (~30 seconds). After that, it's gone."
+          "noAccounts": "🛡️ Secure authentication via Supabase.",
+          "noEmail": "📧 We don't sell your contact information.",
+          "noStorage": "🔒 Your CVs and Job details are private and encrypted at rest.",
+          "lifetime": "You have full control. Delete your account at any time, and every trace of your data is wiped immediately."
         },
         "dataCollected": {
           "title": "What We Collect",
-          "limited": "We collect the absolute minimum to make the product work:",
+          "limited": "We collect the data necessary to provide the tracking service:",
           "items": {
             "payment": {
-              "title": "Payment data",
-              "description": "Processed entirely by Stripe. We never see your credit card details. We store only: payment confirmation, amount, timestamp."
+              "title": "Billing Data",
+              "description": "Processed entirely by Stripe. We store only payment status and basic transaction info."
             },
             "analytics": {
-              "title": "Anonymous usage data",
-              "description": "To improve the product, we track:",
-              "sub": {
-                "trigger": "Trigger context (why you came)",
-                "funnel": "Which steps you complete",
-                "referrer": "Where you came from",
-                "country": "Approximate country (via IP)"
-              }
+              "title": "Usage Analytics",
+              "description": "Anonymous data to improve the platform, such as feature usage and page performance."
             }
           }
         },
@@ -174,77 +134,49 @@
           "items": {
             "analytics": {
               "title": "Product improvement",
-              "description": "Anonymous analytics help us fix drop-offs and build features founders actually want."
+              "description": "Helping us identify which features help users land jobs faster."
             },
             "improvement": {
-              "title": "Roast quality",
-              "description": "We may retain anonymized excerpts to improve prompt quality — never raw pitch text."
-            },
-            "marketing": "Marketing emails — we don't have your email"
+              "title": "AI Quality",
+              "description": "Improving our CV tailoring and interview prep suggestions."
+            }
           }
         },
         "legalBasis": {
           "title": "Legal Basis",
           "body": "Under GDPR, our legal basis is:",
-          "gdpr": "Legitimate interests (improving the product) + consent (for non-essential cookies)",
-          "ccpa": "We don't sell data. Full stop."
+          "gdpr": "Contract fulfillment (providing the service) and legitimate interests.",
+          "ccpa": "We do not sell your personal information."
         },
         "thirdParties": {
           "title": "Third Parties",
-          "body": "We use these services to run the product. Each has its own privacy policy:",
+          "body": "We use trusted partners to power the platform:",
           "table": {
             "provider": "Provider",
             "purpose": "Purpose",
             "privacyPolicy": "Privacy Policy",
-            "stripe": "Payment processing",
-            "openrouter": "AI roast generation",
-            "anthropic": "AI roast generation",
-            "supabase": "Analytics storage (no pitch data)",
-            "vercel": "Hosting + edge functions"
+            "stripe": "Payments",
+            "supabase": "Database & Auth",
+            "vercel": "Hosting",
+            "resend": "Emails"
           }
-        },
-        "retention": {
-          "title": "Data Retention",
-          "pitchData": {
-            "title": "Pitch text & answers:",
-            "description": "Deleted immediately after PDF generation (typically <60 seconds). Never written to disk."
-          },
-          "analytics": {
-            "title": "Analytics events:",
-            "description": "Retained for 12 months, then anonymized. Used only to improve conversion."
-          },
-          "payment": {
-            "title": "Payment records:",
-            "description": "Retained for 7 years (tax/legal requirements). No payment details, just confirmation."
-          },
-          "audit": "You can request deletion of any analytics data linked to your session ID at any time."
         },
         "rights": {
           "title": "Your Rights",
-          "body": "Depending on your location, you may have the right to:",
+          "body": "You have the right to:",
           "items": {
-            "access": "Access data we hold about you",
-            "deletion": "Request deletion",
-            "export": "Export your data",
+            "access": "Access your data",
+            "deletion": "Request permanent deletion",
+            "export": "Export your data (coming soon)",
             "object": "Object to processing"
           },
           "contact": "Contact us at"
         },
         "cookies": {
           "title": "Cookies",
-          "body": "We use essential cookies only (session management, security). No tracking cookies, no third-party marketing cookies.",
-          "manage": "Manage preferences:",
+          "body": "We use essential session cookies only. No cross-site tracking.",
+          "manage": "Manage Preferences:",
           "preferences": "Cookie Settings"
-        },
-        "changes": {
-          "title": "Changes to This Policy",
-          "body": "If we change how we handle data, we'll update this page and notify users via the website.",
-          "lastUpdated": "Last updated: {date}"
-        },
-        "contact": {
-          "title": "Contact",
-          "email": "Email:",
-          "response": "We aim to respond within 48 hours."
         }
       }
     }

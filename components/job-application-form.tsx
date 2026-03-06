@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
-import { STATUS_OPTIONS } from './stage-transition-modal';
+import { ApplicationStatus } from '@/types';
 
 interface JobApplicationFormProps {
   initialData?: any;
@@ -191,7 +191,7 @@ export function JobApplicationForm({ initialData, editMode = false }: JobApplica
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map(status => (
+                  {ApplicationStatus.map(status => (
                     <SelectItem key={status} value={status}>{status}</SelectItem>
                   ))}
                 </SelectContent>

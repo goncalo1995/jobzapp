@@ -11,19 +11,17 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/admin/',           // Block all admin routes
-          '/pt/admin/', 
-          '/en/admin/', 
+          '/dashboard/',           // Block all admin routes
           '/api/',
-          '/*/admin/',         // Block any locale admin
+          '/*/dashboard/',         // Block any locale admin
         ],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/admin/', '/api/'],
+        disallow: ['/dashboard/', '/api/'],
       }
     ],
-    sitemap: 'https://helenacolaco.com/sitemap.xml',
+    sitemap: 'https://jobs.rochanegra.com/sitemap.xml',
   }
 }
