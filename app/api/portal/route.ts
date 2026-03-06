@@ -11,7 +11,9 @@ export async function GET(req: NextRequest) {
   }
 
   const polarExternalId = user.id;
-  const polarApiUrl = `https://sandbox-api.polar.sh/v1/customers?external_id=${polarExternalId}`;
+  const isSandbox = (process.env.NEXT_PUBLIC_POLAR_SERVER || "sandbox") === "sandbox";
+  const polarApiBase = isSandbox ? "https://sandbox-api.polar.sh" : "https://api.polar.sh";
+  const polarApiUrl = `${polarApiBase}/v1/customers?external_id=${polarExternalId}`;
   
   console.log(polarApiUrl);
   let customerId = "";

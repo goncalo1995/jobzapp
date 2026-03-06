@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,12 +11,29 @@ import { Sparkles, Key, ExternalLink } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useSearchParams, useParams } from "next/navigation";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { X, AlertTriangle } from "lucide-react";
 
 export default function SettingsPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto max-w-4xl py-8">Loading settings...</div>}>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const t = useTranslations("Pages.settings");
+  const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = params.locale as string;
   const supabase = createClient();
   const [aiCredits, setAiCredits] = useState<number>(0);
   const [loadingCredits, setLoadingCredits] = useState(true);
+  const [showError, setShowError] = useState(false);
+  
+  const errorParam = searchParams.get("error");
   
   const [openRouterKey, setOpenRouterKey] = useState("");
 
@@ -43,13 +60,13 @@ export default function SettingsPage() {
     }
     
     loadCredits();
-    
-    // Display error if redirected from Polar Portal (no previous purchases)
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error") === "no_polar_customer") {
-      toast.error(t("noPurchasesYet") || "You must make a purchase first to access the Customer Portal.");
+  }, [supabase]);
+
+  useEffect(() => {
+    if (errorParam === "no_polar_customer") {
+      setShowError(true);
     }
-  }, [supabase, t]);
+  }, [errorParam]);
 
   const handleSaveKey = () => {
     if (openRouterKey.trim() === "") {
@@ -69,6 +86,23 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto max-w-4xl py-8 space-y-8">
+      {showError && (
+        <Alert variant="destructive" className="relative pr-12">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Attention Required</AlertTitle>
+          <AlertDescription>
+            {t("noPurchasesYet")}
+          </AlertDescription>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute right-2 top-2 h-8 w-8"
+            onClick={() => setShowError(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </Alert>
+      )}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
         <p className="text-muted-foreground mt-2">Manage your account preferences and integrations.</p>
@@ -101,12 +135,12 @@ export default function SettingsPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
-              <Link href="/api/checkout?products=ai_topup_50" className="flex-1">
+              <Link href={`/api/checkout?locale=${locale}&products=${process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_TOPUP_50 || 'd706db71-02ce-4638-81ef-8b7e917aabf4'}`} className="flex-1">
                 <Button className="w-full" variant="outline">
                   {t("aiQuotas.buyCredits")}
                 </Button>
               </Link>
-              <Link href="/api/portal" className="flex-1">
+              <Link href={`/api/portal?locale=${locale}`} className="flex-1">
                 <Button className="w-full" variant="secondary">
                   {t("aiQuotas.manageBilling")}
                   <ExternalLink className="w-4 h-4 ml-2" />

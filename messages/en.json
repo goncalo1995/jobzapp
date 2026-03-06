@@ -183,6 +183,7 @@
     },
     "settings": {
       "title": "Settings",
+      "noPurchasesYet": "You must make a purchase first to access the Customer Portal.",
       "aiQuotas": {
         "title": "AI Credits & Plans",
         "description": "Manage your AI usage limit and pricing plans.",
@@ -200,6 +201,15 @@
         "saveKey": "Save Key",
         "removeKey": "Remove Key",
         "savedText": "Key saved to local storage."
+      }
+    },
+    "checkout": {
+      "success": {
+        "title": "Payment Successful!",
+        "message": "Thank you for your purchase. Your AI credits have been added to your account.",
+        "confetti": "Success",
+        "backToDashboard": "Back to Dashboard",
+        "viewSettings": "View AI Credits"
       }
     }
   }
