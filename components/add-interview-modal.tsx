@@ -20,12 +20,25 @@ import { Constants } from '@/types/database.types';
 interface AddInterviewModalProps {
   applicationId: string;
   companyId?: string;
+  interview?: any; // Optional interview for edit mode
   onSuccess: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
 }
 
-export function AddInterviewModal({ applicationId, companyId, onSuccess, children }: AddInterviewModalProps) {
-  const [open, setOpen] = useState(false);
+export function AddInterviewModal({ 
+  applicationId, 
+  companyId, 
+  interview, 
+  onSuccess, 
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+  children 
+}: AddInterviewModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange !== undefined ? externalOnOpenChange : setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [fetchingContacts, setFetchingContacts] = useState(false);
   
@@ -41,6 +54,25 @@ export function AddInterviewModal({ applicationId, companyId, onSuccess, childre
   const [selectedContactIds, setSelectedContactIds] = useState<string[]>([]);
 
   const supabase = createClient();
+
+  // Pre-fill form if editing
+  useEffect(() => {
+    if (interview && open) {
+      setType(interview.type || 'Technical');
+      setFormat(interview.format || 'Google Meet');
+      // Format date for datetime-local input
+      if (interview.interview_date) {
+        const d = new Date(interview.interview_date);
+        const formattedDate = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        setDate(formattedDate);
+      }
+      setDuration(interview.duration?.toString() || '60');
+      setRound(interview.round?.toString() || '1');
+      setInterviewers(interview.interviewer_names?.join(', ') || '');
+      setSelectedContactIds(interview.interviewer_ids || []);
+      setNotes(interview.notes || '');
+    }
+  }, [interview, open]);
 
   useEffect(() => {
     if (open && companyId) {
@@ -68,7 +100,7 @@ export function AddInterviewModal({ applicationId, companyId, onSuccess, childre
 
     setLoading(true);
     try {
-      const { error } = await supabase.from('interviews').insert({
+      const interviewData = {
         job_application_id: applicationId,
         type: type as any,
         format: format as any,
@@ -78,25 +110,43 @@ export function AddInterviewModal({ applicationId, companyId, onSuccess, childre
         interviewer_names: interviewers ? interviewers.split(',').map(n => n.trim()) : [],
         interviewer_ids: selectedContactIds.length > 0 ? selectedContactIds : null,
         notes
-      });
+      };
+
+      let error;
+      if (interview) {
+        // Update
+        const { error: updateError } = await supabase
+          .from('interviews')
+          .update(interviewData)
+          .eq('id', interview.id);
+        error = updateError;
+      } else {
+        // Create
+        const { error: insertError } = await supabase
+          .from('interviews')
+          .insert(interviewData);
+        error = insertError;
+      }
 
       if (error) throw error;
 
-      toast.success('Interview added successfully');
+      toast.success(interview ? 'Interview updated successfully' : 'Interview added successfully');
       setOpen(false);
       onSuccess();
       
-      // Reset form
-      setType('Technical');
-      setFormat('Google Meet');
-      setDate('');
-      setDuration('60');
-      setRound('1');
-      setInterviewers('');
-      setSelectedContactIds([]);
-      setNotes('');
+      // Reset form (if not editing)
+      if (!interview) {
+        setType('Technical');
+        setFormat('Google Meet');
+        setDate('');
+        setDuration('60');
+        setRound('1');
+        setInterviewers('');
+        setSelectedContactIds([]);
+        setNotes('');
+      }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to add interview');
+      toast.error(err.message || 'Failed to save interview');
     } finally {
       setLoading(false);
     }
@@ -107,15 +157,15 @@ export function AddInterviewModal({ applicationId, companyId, onSuccess, childre
       <DialogTrigger asChild>
         {children || (
           <Button size="sm" variant="outline" className="gap-2">
-            <Plus className="h-4 w-4" /> Add Interview
+            <Plus className="h-4 w-4" /> {interview ? 'Edit Interview' : 'Add Interview'}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-heading font-bold">Schedule Interview</DialogTitle>
+          <DialogTitle className="text-xl font-heading font-bold">{interview ? 'Edit Interview' : 'Schedule Interview'}</DialogTitle>
           <DialogDescription>
-            Record details for an upcoming or past interview.
+            {interview ? 'Update the details for this interview.' : 'Record details for an upcoming or past interview.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -240,7 +290,7 @@ export function AddInterviewModal({ applicationId, companyId, onSuccess, childre
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Saving...' : 'Add Interview'}
+            {loading ? 'Saving...' : (interview ? 'Update Interview' : 'Add Interview')}
           </Button>
         </DialogFooter>
       </DialogContent>

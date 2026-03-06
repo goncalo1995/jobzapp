@@ -6,20 +6,24 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
   Building2, ArrowLeft, Trash2, Edit, 
-  Archive, FileText, Share2, MoreVertical
+  Archive, FileText, Share2, MoreVertical,
+  Calendar, Star, DollarSign, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Link } from '@/i18n/navigation';
 import { 
   OverviewTab, 
   ContactsTab, 
   OfferDetailsTab,
-  SidebarWidgets
+  InterviewsTab
 } from '@/components/job-detail-tabs';
 import { StageTransitionModal } from '@/components/stage-transition-modal';
+import { AddInterviewModal } from '@/components/add-interview-modal';
+import { AddOfferModal } from '@/components/add-offer-modal';
 import type { JobApplication, Interview, Interaction, Contact, JobOffer, CV } from '@/types';
 import Image from "next/image";
 
@@ -35,6 +39,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [offers, setOffers] = useState<JobOffer[]>([]);
+
+  // Modal chaining state
+  const [showAddInterview, setShowAddInterview] = useState(false);
+  const [showAddOffer, setShowAddOffer] = useState(false);
 
   const supabase = createClient();
 
@@ -144,16 +152,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   if (!job) return null;
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="max-w-5xl mx-auto space-y-8 pb-20">
       {/* Premium Header */}
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
         <div className="flex items-start gap-5">
           <div className="h-16 w-16 bg-secondary rounded-2xl flex items-center justify-center border border-border shadow-sm shrink-0">
              {job.company?.website ? (
                <Image 
                  src={`https://img.logo.dev/${job.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                  alt={job.company.name} 
-                 className="h-10 w-10 object-contain"
+                 width={64}
+                 height={64}
+                 className="object-contain p-1"
                  onError={(e) => {
                    (e.target as any).style.display = 'none';
                    (e.target as any).nextSibling.style.display = 'flex';
@@ -169,7 +179,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </Link>
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-3xl font-heading font-black text-foreground tracking-tight">{job.position}</h1>
-              <Badge className="bg-accent/10 text-accent border-accent/20 px-3 py-1 font-bold text-xs">
+              <Badge className="bg-accent/10 text-accent border-accent/20 px-3 py-1 font-bold text-xs uppercase tracking-wider">
                 {job.status}
               </Badge>
             </div>
@@ -186,45 +196,96 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             applicationId={job.id} 
             currentStatus={job.status || 'Applied'} 
             onSuccess={loadData}
+            onTransitionedToInterview={() => setShowAddInterview(true)}
+            onTransitionedToOffer={() => setShowAddOffer(true)}
           />
+          <Button variant="outline" size="icon" className="h-10 w-10 border-border" asChild>
+            <Link href={`/dashboard/jobs/${job.id}/edit`}>
+              <Edit className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="outline" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/5" onClick={handleDelete} disabled={deleting}>
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
       </header>
 
-      {/* Dashboard Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-8">
-          <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList className="bg-transparent border-b border-border w-full justify-start rounded-none h-auto p-0 gap-8">
-              {['Overview', 'Contacts', 'Offer Details'].map((tab) => (
+      {/* Main Content Areas - Restructured for cleaner visuals */}
+      <div className="space-y-8">
+        <Tabs defaultValue="overview" className="space-y-8">
+          <div className="relative border-b border-border">
+            <TabsList className="bg-transparent w-full justify-start rounded-none h-auto p-0 gap-2 md:gap-8 overflow-x-auto no-scrollbar flex-nowrap scroll-smooth">
+              {[
+                { label: 'Overview', value: 'overview', icon: FileText },
+                { label: 'Interviews', value: 'interviews', icon: Calendar },
+                { label: 'Contacts', value: 'contacts', icon: Users },
+                { label: 'Offer Details', value: 'offer-details', icon: DollarSign },
+              ].map((tab) => (
                 <TabsTrigger 
-                  key={tab} 
-                  value={tab.toLowerCase().replace(' ', '-')}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-0 pb-4 text-sm font-bold text-muted-foreground data-[state=active]:text-foreground transition-all"
+                  key={tab.value} 
+                  value={tab.value}
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-4 text-sm font-bold text-muted-foreground data-[state=active]:text-foreground transition-all flex items-center gap-2 shrink-0 group"
                 >
-                  {tab}
+                  <tab.icon className={cn(
+                    "h-4 w-4 transition-colors",
+                    "group-data-[state=active]:text-primary"
+                  )} />
+                  <span className="hidden data-[state=active]:block group-data-[state=active]:inline">
+                    {tab.label}
+                  </span>
                 </TabsTrigger>
               ))}
             </TabsList>
+          </div>
 
-            <TabsContent value="overview" className="mt-0 outline-none">
-              <OverviewTab job={job} cv={cv || undefined} />
-            </TabsContent>
+          <TabsContent value="overview" className="mt-0 outline-none animate-in fade-in duration-300">
+            <OverviewTab job={job} cv={cv || undefined} />
+          </TabsContent>
 
-            <TabsContent value="contacts" className="mt-0 outline-none">
-              <ContactsTab contacts={contacts} interactions={interactions} companyId={job.company_id} onSuccess={loadData} />
-            </TabsContent>
+          <TabsContent value="interviews" className="mt-0 outline-none animate-in fade-in duration-300">
+            <InterviewsTab interviews={interviews} applicationId={job.id} companyId={job.company_id} onSuccess={loadData} />
+          </TabsContent>
 
-            <TabsContent value="offer-details" className="mt-0 outline-none">
-              <OfferDetailsTab offers={offers} applicationId={job.id} onSuccess={loadData} />
-            </TabsContent>
-          </Tabs>
-        </div>
+          <TabsContent value="contacts" className="mt-0 outline-none animate-in fade-in duration-300">
+            <ContactsTab contacts={contacts} interactions={interactions} companyId={job.company_id} onSuccess={loadData} />
+          </TabsContent>
 
-        {/* Sidebar Widgets */}
-        <div className="lg:col-span-4">
-           <SidebarWidgets job={job} contacts={contacts} onSuccess={loadData} />
-        </div>
+          <TabsContent value="offer-details" className="mt-0 outline-none animate-in fade-in duration-300">
+            <OfferDetailsTab offers={offers} applicationId={job.id} onSuccess={loadData} />
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* Chained Modals */}
+      {showAddInterview && (
+        <AddInterviewModal 
+          applicationId={job.id} 
+          companyId={job.company_id || undefined} 
+          onSuccess={() => {
+            setShowAddInterview(false);
+            loadData();
+          }}
+        >
+          <div className="hidden" /> {/* Hidden trigger, controlled by state */}
+          {/* Note: In a real app, you'd probably want a way to open it without a trigger. 
+              Since our component expects a children/trigger, we can use a dummy or modify it.
+              Actually, let's just use the state to control the 'open' prop of the modal if we had it,
+              but since we wrap Dialog, we can just pass an 'open' prop to AddInterviewModal.
+          */}
+        </AddInterviewModal>
+      )}
+
+      {showAddOffer && (
+        <AddOfferModal 
+          applicationId={job.id} 
+          onSuccess={() => {
+            setShowAddOffer(false);
+            loadData();
+          }}
+          open={showAddOffer}
+          onOpenChange={setShowAddOffer}
+        />
+      )}
     </div>
   );
 }

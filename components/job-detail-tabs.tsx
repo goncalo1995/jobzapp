@@ -187,9 +187,9 @@ export function OfferDetailsTab({
 
   return (
     <div className="space-y-6">
-       <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">Offer Details</h3>
-        <AddOfferModal applicationId={applicationId} onSuccess={onSuccess} />
+        <AddOfferModal applicationId={applicationId} offer={latestOffer} onSuccess={onSuccess} />
       </div>
 
       {latestOffer ? (
@@ -257,73 +257,83 @@ export function OfferDetailsTab({
   );
 }
 
-export function SidebarWidgets({ 
-  job, 
-  contacts, 
+export function InterviewsTab({ 
+  interviews, 
+  applicationId, 
+  companyId,
   onSuccess 
 }: { 
-  job: JobApplication, 
-  contacts: Contact[], 
-  onSuccess: () => void 
+  interviews: Interview[], 
+  applicationId: string,
+  companyId: string | null,
+  onSuccess: () => void
 }) {
   return (
     <div className="space-y-6">
-      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Actions</h3>
-        </div>
-        <div className="space-y-2">
-          <AddInterviewModal applicationId={job.id} companyId={job.company_id || undefined} onSuccess={onSuccess}>
-            <Button variant="outline" className="w-full justify-start gap-2 h-10">
-              <Star className="h-4 w-4 text-accent" /> Schedule Interview
-            </Button>
-          </AddInterviewModal>
-          {job.company_id && (
-            <AddContactModal companyId={job.company_id} onSuccess={onSuccess}>
-              <Button variant="outline" className="w-full justify-start gap-2 h-10">
-                <Users className="h-4 w-4 text-primary" /> Add Contact
-              </Button>
-            </AddContactModal>
-          )}
-          <AddOfferModal applicationId={job.id} onSuccess={onSuccess}>
-            <Button variant="outline" className="w-full justify-start gap-2 h-10">
-              <DollarSign className="h-4 w-4 text-success" /> Record Offer
-            </Button>
-          </AddOfferModal>
-        </div>
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-foreground">Interviews</h3>
+        <AddInterviewModal 
+          applicationId={applicationId} 
+          companyId={companyId || undefined} 
+          onSuccess={onSuccess} 
+        />
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">People</h3>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" asChild>
-            <Users className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          {contacts.slice(0, 3).map((contact, i) => (
-             <div key={i} className="flex items-center justify-between gap-3">
-               <div className="flex items-center gap-2.5">
-                 <div className="h-8 w-8 bg-secondary rounded-full flex items-center justify-center text-xs font-bold text-muted-foreground">
-                   {contact.name.charAt(0)}
-                 </div>
-                 <div className="space-y-0.5 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{contact.name}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{contact.role}</p>
-                 </div>
-               </div>
-               <div className="flex items-center gap-1">
-                 {contact.email && <Mail className="h-3 w-3 text-muted-foreground" />}
-                 {contact.linkedin && <Linkedin className="h-3 w-3 text-muted-foreground" />}
-               </div>
-             </div>
-          ))}
-          {contacts.length === 0 && (
-            <p className="text-xs text-muted-foreground italic text-center py-2">No contacts recorded.</p>
-          )}
-        </div>
+      <div className="space-y-4">
+        {interviews.map((interview, i) => (
+          <div key={i} className="bg-card border border-border rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 bg-accent/10 rounded-xl flex items-center justify-center shrink-0">
+                <Calendar className="h-6 w-6 text-accent" />
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-foreground">{interview.type} Interview</h4>
+                  <Badge variant="secondary" className="text-[10px] h-5">Round {interview.round}</Badge>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <Clock className="h-3.5 w-3.5" /> 
+                    {interview.interview_date ? new Date(interview.interview_date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A'}
+                  </span>
+                  <span className="flex items-center gap-1.5 font-medium">
+                    <MapPin className="h-3.5 w-3.5" /> {interview.format || 'Virtual'}
+                  </span>
+                  {interview.duration && (
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Clock className="h-3.5 w-3.5" /> {interview.duration} mins
+                    </span>
+                  )}
+                </div>
+                {interview.notes && (
+                  <p className="text-xs text-muted-foreground line-clamp-2 mt-2 italic">"{interview.notes}"</p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 md:self-start">
+              <AddInterviewModal 
+                applicationId={applicationId} 
+                companyId={companyId || undefined} 
+                interview={interview}
+                onSuccess={onSuccess}
+              >
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5">
+                  <Star className="h-3.5 w-3.5" /> Edit
+                </Button>
+              </AddInterviewModal>
+            </div>
+          </div>
+        ))}
+        {interviews.length === 0 && (
+          <div className="bg-secondary/10 border border-dashed border-border rounded-xl p-12 text-center flex flex-col items-center justify-center space-y-3">
+            <Calendar className="h-10 w-10 text-muted-foreground/30" />
+            <p className="text-sm text-muted-foreground italic">No interviews scheduled yet.</p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+// SidebarWidgets removed as requested
 

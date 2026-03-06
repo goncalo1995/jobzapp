@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Dialog, DialogContent, DialogDescription, 
   DialogFooter, DialogHeader, DialogTitle, 
@@ -18,12 +18,24 @@ import { Constants } from '@/types/database.types';
 
 interface AddOfferModalProps {
   applicationId: string;
+  offer?: any; // Optional offer for edit mode
   onSuccess: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   children?: React.ReactNode;
 }
 
-export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferModalProps) {
-  const [open, setOpen] = useState(false);
+export function AddOfferModal({ 
+  applicationId, 
+  offer, 
+  onSuccess, 
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+  children 
+}: AddOfferModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange !== undefined ? externalOnOpenChange : setInternalOpen;
   const [loading, setLoading] = useState(false);
   
   const [status, setStatus] = useState('Pending');
@@ -37,6 +49,20 @@ export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferMo
 
   const supabase = createClient();
 
+  // Pre-fill form if editing
+  useEffect(() => {
+    if (offer && open) {
+      setStatus(offer.status || 'Pending');
+      setSalary(offer.base_salary?.toString() || '');
+      setCurrency(offer.base_salary_currency || 'USD');
+      setEquity(offer.equity || '');
+      setBenefits(offer.benefits?.join(', ') || '');
+      setPros(offer.pros?.join(', ') || '');
+      setCons(offer.cons?.join(', ') || '');
+      setNotes(offer.negotiation_notes || '');
+    }
+  }, [offer, open]);
+
   async function handleSubmit() {
     if (!salary) {
       toast.error('Base salary is required');
@@ -45,7 +71,7 @@ export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferMo
 
     setLoading(true);
     try {
-      const { error } = await supabase.from('job_offers').insert({
+      const offerData = {
         job_application_id: applicationId,
         status: status as any,
         base_salary: parseFloat(salary),
@@ -55,25 +81,41 @@ export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferMo
         pros: pros ? pros.split(',').map(p => p.trim()) : [],
         cons: cons ? cons.split(',').map(c => c.trim()) : [],
         negotiation_notes: notes
-      });
+      };
+
+      let error;
+      if (offer) {
+        const { error: updateError } = await supabase
+          .from('job_offers')
+          .update(offerData)
+          .eq('id', offer.id);
+        error = updateError;
+      } else {
+        const { error: insertError } = await supabase
+          .from('job_offers')
+          .insert(offerData);
+        error = insertError;
+      }
 
       if (error) throw error;
 
-      toast.success('Offer recorded successfully');
+      toast.success(offer ? 'Offer updated successfully' : 'Offer recorded successfully');
       setOpen(false);
       onSuccess();
       
-      // Reset form
-      setStatus('Pending');
-      setSalary('');
-      setCurrency('USD');
-      setEquity('');
-      setBenefits('');
-      setPros('');
-      setCons('');
-      setNotes('');
+      // Reset form (if not editing)
+      if (!offer) {
+        setStatus('Pending');
+        setSalary('');
+        setCurrency('USD');
+        setEquity('');
+        setBenefits('');
+        setPros('');
+        setCons('');
+        setNotes('');
+      }
     } catch (err: any) {
-      toast.error(err.message || 'Failed to record offer');
+      toast.error(err.message || 'Failed to save offer');
     } finally {
       setLoading(false);
     }
@@ -84,15 +126,15 @@ export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferMo
       <DialogTrigger asChild>
         {children || (
           <Button size="sm" variant="outline" className="gap-2">
-            <Plus className="h-4 w-4" /> Add Offer
+            <Plus className="h-4 w-4" /> {offer ? 'Edit Offer' : 'Add Offer'}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-heading font-bold">Record Job Offer</DialogTitle>
+          <DialogTitle className="text-xl font-heading font-bold">{offer ? 'Edit Job Offer' : 'Record Job Offer'}</DialogTitle>
           <DialogDescription>
-            Record the details of the offer you received.
+            {offer ? 'Update the details of the offer you received.' : 'Record the details of the offer you received.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -202,7 +244,7 @@ export function AddOfferModal({ applicationId, onSuccess, children }: AddOfferMo
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Saving...' : 'Record Offer'}
+            {loading ? 'Saving...' : (offer ? 'Update Offer' : 'Record Offer')}
           </Button>
         </DialogFooter>
       </DialogContent>
