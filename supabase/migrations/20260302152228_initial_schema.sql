@@ -39,6 +39,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS public.interactions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     contact_id UUID REFERENCES public.contacts(id) ON DELETE CASCADE,
+    job_application_id UUID REFERENCES public.job_applications(id) ON DELETE CASCADE,
     type public.interaction_type NOT NULL,
     interaction_date TIMESTAMPTZ DEFAULT NOW(),
     notes TEXT,

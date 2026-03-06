@@ -1,15 +1,13 @@
 'use client';
 
 import { 
-  Building2, Calendar, FileText, Link as LinkIcon, 
-  DollarSign, Briefcase, MapPin, CheckCircle2, 
-  Plus, Users, MessageSquare, Star, Clock,
-  ArrowUpRight, ExternalLink, Mail, Linkedin
+  Calendar, FileText, DollarSign, MapPin, CheckCircle2,
+  MessageSquare, Clock, ArrowUpRight, ExternalLink, Mail, 
+  Linkedin, Pencil
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import type { JobApplication, Interview, Interaction, Contact, JobOffer, CV } from '@/types';
 import { AddContactModal } from './add-contact-modal';
 import { AddInterviewModal } from './add-interview-modal';
@@ -318,7 +316,7 @@ export function InterviewsTab({
                 onSuccess={onSuccess}
               >
                 <Button variant="ghost" size="sm" className="h-8 gap-1.5">
-                  <Star className="h-3.5 w-3.5" /> Edit
+                  <Pencil className="h-3.5 w-3.5" /> Edit
                 </Button>
               </AddInterviewModal>
             </div>

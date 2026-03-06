@@ -5,9 +5,8 @@ import { useState, useEffect, use } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, ArrowLeft, Trash2, Edit, 
-  Archive, FileText, Share2, MoreVertical,
-  Calendar, Star, DollarSign, Users
+  Building2, ArrowLeft, Trash2, Edit, FileText,
+  Calendar, DollarSign, Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -224,13 +223,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <TabsTrigger 
                   key={tab.value} 
                   value={tab.value}
-                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 pb-4 text-sm font-bold text-muted-foreground data-[state=active]:text-foreground transition-all flex items-center gap-2 shrink-0 group"
+                  className="rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-4 text-sm font-bold text-muted-foreground data-[state=active]:text-foreground transition-all flex items-center gap-2 shrink-0 group"
                 >
                   <tab.icon className={cn(
                     "h-4 w-4 transition-colors",
                     "group-data-[state=active]:text-primary"
                   )} />
-                  <span className="hidden data-[state=active]:block group-data-[state=active]:inline">
+                  <span className="hidden lg:block data-[state=active]:block group-data-[state=active]:inline">
                     {tab.label}
                   </span>
                 </TabsTrigger>
@@ -265,14 +264,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             setShowAddInterview(false);
             loadData();
           }}
-        >
-          <div className="hidden" /> {/* Hidden trigger, controlled by state */}
-          {/* Note: In a real app, you'd probably want a way to open it without a trigger. 
-              Since our component expects a children/trigger, we can use a dummy or modify it.
-              Actually, let's just use the state to control the 'open' prop of the modal if we had it,
-              but since we wrap Dialog, we can just pass an 'open' prop to AddInterviewModal.
-          */}
-        </AddInterviewModal>
+          open={showAddInterview}
+          onOpenChange={setShowAddInterview}
+        />
       )}
 
       {showAddOffer && (
