@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from '@/components/ui/separator';
+import { AIModelSelector } from '@/components/ai/model-selector';
 import { TAILOR_SYSTEM_PROMPT } from '@/lib/prompts';
 
 export default function NewCVPage() {
@@ -90,7 +91,6 @@ export default function NewCVPage() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Tailoring failed');
       
-      const tailoredData = data.tailoredData;
       setFormData(prev => ({ ...prev, target_role: data.tailoredData.current_role || prev.target_role }));
       toast.success('CV tailored successfully!');
     } catch (err: any) {
@@ -202,17 +202,11 @@ export default function NewCVPage() {
                 className="min-h-[300px] text-sm leading-relaxed resize-none bg-secondary/30"
               />
               <div className="flex gap-2">
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="w-1/2 bg-background border-border">
-                    <SelectValue placeholder="Select AI Model" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (2 Cr)</SelectItem>
-                    <SelectItem value="openai/gpt-4o">GPT-4o (2 Cr)</SelectItem>
-                    <SelectItem value="openai/gpt-4o-mini">GPT-4o mini (1 Cr)</SelectItem>
-                    <SelectItem value="google/gemini-2.5-flash">Gemini 2.5 Flash (1 Cr)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <AIModelSelector 
+                  value={selectedModel} 
+                  onValueChange={setSelectedModel}
+                  className="w-1/2 bg-background border-border"
+                />
                 <Button 
                   onClick={handleTailor} 
                   disabled={tailoring || !profile?.parsed_data} 
@@ -678,6 +672,4 @@ function SectionContainer({ title, icon, children }: { title: string; icon: Reac
   );
 }
 
-function Separator() {
-  return <div className="h-px bg-border w-full" />;
-}
+

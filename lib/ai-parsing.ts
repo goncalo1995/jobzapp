@@ -42,7 +42,7 @@ export async function parseCareerBio(rawBio: string, userId: string, customApiKe
   const result = await callOpenRouter(
     PARSING_SYSTEM_PROMPT,
     `Extract career data from this text:\n\n${rawBio}`,
-    'claude-3-5-sonnet',
+    'anthropic/claude-3.5-sonnet',
     { userId, customApiKey }
   );
 

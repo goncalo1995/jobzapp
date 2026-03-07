@@ -33,60 +33,22 @@ const NAV_ITEMS = [
   { href: '/dashboard/activity', label: 'Activity', icon: Activity },
 ];
 
+import { useProfile } from '@/components/providers/profile-provider';
+
+// ... (skipping nav items)
+
 export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [aiCredits, setAiCredits] = useState<number | null>(null);
+  const { credits: aiCredits, loading: profileLoading } = useProfile();
   const [hasByok, setHasByok] = useState(false);
 
   useEffect(() => {
     // Check for BYOK locally
     setHasByok(!!localStorage.getItem("openrouter_key"));
-
-    let channel: any;
-
-    async function loadInitialCredits() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('user_profiles')
-        .select('ai_credits')
-        .eq('id', user.id)
-        .single();
-        
-      if (data) {
-        setAiCredits(data.ai_credits || 0);
-      }
-
-      // Setup Realtime Subscription
-      channel = supabase.channel('schema-db-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'user_profiles',
-            filter: `id=eq.${user.id}`
-          },
-          (payload) => {
-            const newCredits = payload.new.ai_credits;
-            setAiCredits(newCredits || 0);
-          }
-        )
-        .subscribe();
-    }
-
-    loadInitialCredits();
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [supabase]);
+  }, []);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -159,10 +121,10 @@ export function Sidebar() {
             
             {!hasByok && (
               <div className="flex items-center gap-2 mt-1">
-                <Sparkles className={cn("w-4 h-4 transition-colors", aiCredits && aiCredits > 0 ? "text-primary" : "text-muted-foreground")} />
-                { aiCredits === null ? <Spinner className='w-4' /> : null}
-                <span className={cn("text-sm font-medium", !aiCredits || aiCredits === 0 ? "text-muted-foreground" : "")}>
-                  {aiCredits === null ? "" : aiCredits} Credits
+                <Sparkles className={cn("w-4 h-4 transition-colors", aiCredits > 0 ? "text-primary" : "text-muted-foreground")} />
+                { profileLoading ? <Spinner className='w-4' /> : null}
+                <span className={cn("text-sm font-medium", aiCredits === 0 ? "text-muted-foreground" : "")}>
+                  {profileLoading ? "" : aiCredits} Credits
                 </span>
               </div>
             )}

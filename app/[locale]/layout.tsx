@@ -52,6 +52,14 @@ export default async function LocaleLayout({children, params}: Props) {
   
   return (
     <html lang={locale} data-scroll-behavior="smooth" className="dark">
+      <head>
+        <meta name="theme-color" content="#4F6BF6" />
+        {/* This meta tag prevents auto-zooming on form inputs on mobile */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+        />
+      </head>
       <body className={`${plusJakarta.variable} ${inter.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <main className="flex-1">

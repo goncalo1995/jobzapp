@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { parseCareerBio } from '@/lib/ai-parsing';
+import { CHAT_MODELS } from '@/lib/openrouter';
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing bio content' }, { status: 400 });
     }
 
-    const expectedCost = 2; // Fixed cost for claude-3-5-sonnet
+    const expectedCost = CHAT_MODELS['anthropic/claude-3.5-sonnet'].credits; 
     const isByok = !!customApiKey;
 
     // Secure decrement: atomic check and deduction BEFORE AI call (SKIP if BYOK)

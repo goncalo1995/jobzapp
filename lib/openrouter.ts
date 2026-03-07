@@ -1,39 +1,7 @@
 import { adminSupabase } from './supabase/admin';
 
-export interface ChatModel {
-  id: string;
-  pricing: {
-    input: number;
-    output: number;
-  };
-}
+import { CHAT_MODELS, ChatModel } from './ai-config';
 
-export const CHAT_MODELS: Record<string, ChatModel> = {
-  'claude-3-5-haiku': {
-    id: 'anthropic/claude-3.5-haiku',
-    pricing: { input: 0.8 / 1000000, output: 4.0 / 1000000 }
-  },
-  'claude-4-5-haiku': {
-    id: 'anthropic/claude-haiku-4.5',
-    pricing: { input: 1.0 / 1000000, output: 5.0 / 1000000 }
-  },
-  'claude-3-5-sonnet': {
-    id: 'anthropic/claude-3.5-sonnet',
-    pricing: { input: 3.0 / 1000000, output: 30.0 / 1000000 }
-  },
-  'claude-4-sonnet': {
-    id: 'anthropic/claude-sonnet-4',
-    pricing: { input: 3.0 / 1000000, output: 15.0 / 1000000 }
-  },
-  'claude-4-6-sonnet': {
-    id: 'anthropic/claude-sonnet-4.6',
-    pricing: { input: 6.0 / 1000000, output: 15.0 / 1000000 }
-  },
-  'sonar-pro': {
-    id: 'perplexity/sonar-pro',
-    pricing: { input: 3.0 / 1000000, output: 15.0 / 1000000 }
-  }
-};
 
 export interface AIServiceMetadata {
   userId?: string | null;
@@ -44,7 +12,7 @@ export interface AIServiceMetadata {
 export async function callOpenRouter(
   systemPrompt: string,
   userPrompt: string,
-  modelKey: keyof typeof CHAT_MODELS = 'claude-3-5-haiku',
+  modelKey: keyof typeof CHAT_MODELS = 'anthropic/claude-3.5-haiku',
   metadata?: AIServiceMetadata,
   jsonMode: boolean = true
 ) {

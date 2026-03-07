@@ -2,15 +2,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { callOpenRouter, parseAIJSON } from '@/lib/openrouter';
+import { CHAT_MODELS } from '@/lib/ai-config';
 
 import { TAILOR_SYSTEM_PROMPT } from '@/lib/prompts';
-
-const MODEL_COSTS: Record<string, number> = {
-  "anthropic/claude-3.5-sonnet": 2, // High reasoning
-  "openai/gpt-4o": 2, // High reasoning
-  "openai/gpt-4o-mini": 1, // Fast and cheap
-  "google/gemini-2.5-flash": 1, // Fast
-};
 
 export async function POST(request: Request) {
   try {
@@ -28,7 +22,8 @@ export async function POST(request: Request) {
 
     const { profile, jobDescription, model = "anthropic/claude-3.5-sonnet", customApiKey } = await request.json();
 
-    const expectedCost = MODEL_COSTS[model] || 2;
+    const modelConfig = CHAT_MODELS[model as keyof typeof CHAT_MODELS];
+    const expectedCost = modelConfig?.credits ?? 2;
     const isByok = !!customApiKey;
 
     if (!profile || !jobDescription) {

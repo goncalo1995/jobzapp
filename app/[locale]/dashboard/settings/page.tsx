@@ -23,14 +23,14 @@ export default function SettingsPage() {
   );
 }
 
+import { useProfile } from "@/components/providers/profile-provider";
+
 function SettingsContent() {
   const t = useTranslations("Pages.settings");
   const searchParams = useSearchParams();
   const params = useParams();
   const locale = params.locale as string;
-  const supabase = createClient();
-  const [aiCredits, setAiCredits] = useState<number>(0);
-  const [loadingCredits, setLoadingCredits] = useState(true);
+  const { credits: aiCredits, loading: loadingCredits } = useProfile();
   const [showError, setShowError] = useState(false);
   
   const errorParam = searchParams.get("error");
@@ -38,54 +38,12 @@ function SettingsContent() {
   const [openRouterKey, setOpenRouterKey] = useState("");
 
   useEffect(() => {
-    let channel: any;
-
-    async function loadCredits() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('ai_credits')
-        .eq('id', user.id)
-        .single();
-        
-      if (!error && data) {
-        setAiCredits(data.ai_credits || 0);
-      }
-      setLoadingCredits(false);
-
-      // Setup Realtime Subscription
-      channel = supabase.channel('settings-db-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'user_profiles',
-            filter: `id=eq.${user.id}`
-          },
-          (payload) => {
-            const newCredits = payload.new.ai_credits;
-            setAiCredits(newCredits || 0);
-          }
-        )
-        .subscribe();
-    }
-    
     const savedKey = localStorage.getItem("openrouter_key");
     if (savedKey) {
       setOpenRouterKey(savedKey);
     }
-    
-    loadCredits();
+  }, []);
 
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [supabase]);
 
   useEffect(() => {
     if (errorParam === "no_polar_customer") {

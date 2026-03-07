@@ -10,6 +10,7 @@ aiRoast.app
 - [] update url in robots.ts and sitemap
 - [] update url in supabase auth config
 - [] Configure custom bucket domain and add to next.config
+- [] Enable realtime in user_profiles table
 
 - [] Set up analytics
 - [] trigger google search to index the site
