@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Secure decrement: atomic check and deduction BEFORE AI call (SKIP if BYOK)
     if (!isByok) {
       const { data: success, error: deductError } = await supabase.rpc('deduct_ai_credits' as any, {
-        user_id: user.id,
+        target_user_id: user.id,
         amount: expectedCost
       });
 
