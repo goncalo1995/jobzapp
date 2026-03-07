@@ -13,7 +13,6 @@ import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { AIModelSelector } from '@/components/ai/model-selector';
-import { TAILOR_SYSTEM_PROMPT } from '@/lib/prompts';
 
 export default function NewCVPage() {
   const router = useRouter();
@@ -91,9 +90,19 @@ export default function NewCVPage() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || 'Tailoring failed');
       
-      setFormData(prev => ({ ...prev, target_role: data.tailoredData.current_role || prev.target_role }));
-      toast.success('CV tailored successfully!');
+      if (data.tailoredData) {
+        setCvData(data.tailoredData);
+        setFormData(prev => ({ 
+          ...prev, 
+          target_role: data.tailoredData.current_role || prev.target_role 
+        }));
+        toast.success('CV tailored successfully!');
+      } else {
+        console.warn('[Tailor] No tailoredData in response', data);
+        toast.error('Tailoring failed: No data returned');
+      }
     } catch (err: any) {
+      console.error('[Tailor] Error:', err);
       toast.error(err.message || 'Tailoring failed');
     }
     setTailoring(false);
