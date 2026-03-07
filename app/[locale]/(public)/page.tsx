@@ -226,6 +226,72 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Popular Articles */}
+      <section className="w-full py-40 bg-background overflow-hidden relative">
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-primary/5 blur-[120px] rounded-full" />
+        
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
+          <header className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <div className="space-y-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Resources</div>
+              <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight leading-none">
+                Popular <span className="text-primary italic">Articles</span>.
+              </h2>
+            </div>
+            <Link 
+              href="/blog"
+              className="group flex items-center gap-3 text-sm font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-colors"
+            >
+              See all resources <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </header>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Getting a Job in 2026",
+                desc: "The precision protocol for the modern job market.",
+                href: "/blog/tips/getting-a-job-2026",
+                tag: "Strategy"
+              },
+              {
+                title: "Interview Prep Checklist",
+                desc: "A 7-day guide to mastering high-stakes screens.",
+                href: "/blog/interviews/interview-prep-checklist",
+                tag: "Preparation"
+              },
+              {
+                title: "Why Excel Fails",
+                desc: "Why spreadsheets are holding your career back.",
+                href: "/blog/tips/why-excel-fails",
+                tag: "Insights"
+              }
+            ].map((article, i) => (
+              <Link 
+                key={article.href}
+                href={article.href}
+                className="group p-10 bg-secondary/5 border border-border/50 rounded-[32px] hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 flex flex-col justify-between aspect-square md:aspect-[4/5] lg:aspect-square"
+              >
+                <div className="space-y-6">
+                  <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[8px] font-black tracking-widest uppercase inline-block">
+                    {article.tag}
+                  </div>
+                  <h3 className="text-2xl font-heading font-black uppercase tracking-tight group-hover:text-primary transition-colors leading-tight">
+                    {article.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm font-medium italic leading-relaxed">
+                    {article.desc}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-primary opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0 pt-8">
+                  Read Article <ArrowRight className="h-3 w-3" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="w-full max-w-5xl mx-auto px-6 py-40">
         <div className="relative p-12 md:p-20 bg-primary rounded-[40px] overflow-hidden text-center flex flex-col items-center shadow-[0_40px_100px_rgba(0,69,255,0.2)]">

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { parseCareerBio } from '@/lib/ai-parsing';
-import { CHAT_MODELS } from '@/lib/openrouter';
+import { CHAT_MODELS } from '@/lib/ai-config';
 
 export async function POST(request: Request) {
   try {

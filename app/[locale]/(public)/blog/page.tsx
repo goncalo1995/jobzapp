@@ -17,12 +17,32 @@ const ARTICLES = [
         title: 'Mastering the Technical Screen: 5 Strategies to Stand Out',
         desc: 'Learn how to communicate your thought process and solve complex problems during high-pressure technical interviews.',
       },
+      {
+        href: '/blog/interviews/interview-prep-checklist',
+        title: 'The Ultimate Interview Prep Checklist: 7 Days to Mastery',
+        desc: 'A day-by-day guide to preparing for your next high-stakes interview, from company research to the final follow-up.',
+      }
     ],
   },
   {
     cluster: 'Tips',
     context: 'tips',
     items: [
+      {
+        href: '/blog/tips/getting-a-job-2026',
+        title: 'Getting a Job in 2026: The Precision Protocol',
+        desc: 'In 2026, volume is noise. Learn how to use precision-targeting and AI-driven workflows to land your next role.',
+      },
+      {
+        href: '/blog/tips/salary-negotiation-2026',
+        title: 'Salary Negotiation in 2026: Data-Driven and Confident',
+        desc: 'Learn how to approach salary negotiations with hard data and confidence without burning bridges.',
+      },
+      {
+        href: '/blog/tips/cover-letter-tips',
+        title: 'Cover Letters: How to Write One That Actually Gets Read',
+        desc: 'Most cover letters are ignored. Learn the 3-paragraph formula that catches a human eye and gets you the interview.',
+      },
       {
         href: '/blog/tips/why-excel-fails',
         title: 'Why Your Job Search Spreadsheet is Holding You Back',
@@ -34,6 +54,11 @@ const ARTICLES = [
     cluster: 'Productivity',
     context: 'productivity',
     items: [
+      {
+        href: '/blog/productivity/time-blocking-job-search',
+        title: 'Timeboxing Your Job Search: Engineering Your Focus',
+        desc: 'Treat your job search like a project sprint. Learn how timeboxing prevents burnout and increases high-quality output.',
+      },
       {
         href: '/blog/productivity/follow-up-guide',
         title: 'The Art of the Follow-Up: Stay Top-of-Mind',

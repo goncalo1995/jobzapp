@@ -13,18 +13,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/blog',
     '/pricing',
     '/privacy-policy',
+    '/blog/interviews/technical-screen-tips',
+    '/blog/interviews/interview-prep-checklist',
+    '/blog/tips/getting-a-job-2026',
+    '/blog/tips/salary-negotiation-2026',
+    '/blog/tips/cover-letter-tips',
+    '/blog/tips/why-excel-fails',
+    '/blog/productivity/time-blocking-job-search',
+    '/blog/productivity/follow-up-guide',
   ]
   
-  // Generate for each locale
-  const locales = ['en']
-  const staticUrls = locales.flatMap(locale =>
-    staticRoutes.map(route => ({
-      url: `${baseUrl}/${locale}${route}`,
-      lastModified: new Date(),
-      changeFrequency: (route.startsWith('/blog') ? 'monthly' : 'weekly') as 'monthly' | 'weekly',
-      priority: route === '' ? 1.0 : route.startsWith('/blog') ? 0.8 : 0.5,
-    }))
-  )
+  const staticUrls = staticRoutes.map(route => ({
+    url: `${baseUrl}${route}`,
+    lastModified: new Date(),
+    changeFrequency: (route.startsWith('/blog') ? 'monthly' : 'weekly') as 'monthly' | 'weekly',
+    priority: route === '' ? 1.0 : route.startsWith('/blog') ? 0.8 : 0.5,
+  }))
 
   return [...staticUrls]
 }

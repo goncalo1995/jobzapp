@@ -1,22 +1,21 @@
-# aiRoast.app
+# jobzapp.com
 
-Brutal honesty for startup founders. An AI-powered skepticism engine that teardowns pitch decks and startup ideas using structured mental models (Fermi estimation, Pre-mortems, Inversion).
+Brutal honesty for job seekers. An AI-powered skepticism engine that teardowns CVs and startup ideas using structured mental models (Fermi estimation, Pre-mortems, Inversion).
 
-## Core Teardown Process
-1. **Submit Pitch**: Up to 5000 characters of startup pitch text.
-2. **Calibration**: 5 high-friction questions to anchor the AI to reality.
-3. **Analysis**: Teardown of unit economics, distribution, and market assumptions.
-4. **Report**: Multi-page PDF teardown with a deterministic Skepticism Score.
+## Core Functionalities
+1. **CV Analysis**: AI-powered CV analysis and optimization.
+2. **Interview Prep**: AI-powered interview preparation.
+3. **Job Search**: AI-powered job search assistance.
+4. **Resume Builder**: AI-powered resume builder.
 
 ## Resources & Frameworks
-- **Investor Prep**: How to stress-test pitches, common deck mistakes, and what investors never ask aloud.
-- **Post-Rejection**: Extracting signal from "No", pivot vs. persist frameworks.
+- **Job Seeker Prep**: How to stress-test pitches, common deck mistakes, and what investors never ask aloud.
 
 ## Technical Details
 - **Architecture**: Next.js (App Router), i18n support.
-- **Privacy**: No accounts, no emails. Pitch data is deleted post-analysis.
+- **Privacy**: CV data is private and not shared with any third party except for AI analysis.
 
 ## Links
-- [Landing Page](https://airoast.app)
-- [Resources Hub](https://airoast.app/en/blog)
-- [Start a Roast](https://airoast.app/en/roast)
+- [Landing Page](https://jobs.rochanegra.com)
+- [Resources Hub](https://jobs.rochanegra.com/blog)
+- [Get started](https://jobs.rochanegra.com/dashboard)
