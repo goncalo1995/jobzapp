@@ -19,7 +19,7 @@ export default function LandingPage() {
           <Sparkles className="h-4 w-4" /> {t('tagline')}
         </div>
         
-        <h1 className="text-6xl sm:text-7xl md:text-9xl font-heading font-black uppercase tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
+        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-heading font-black uppercase tracking-tighter leading-[0.85] animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
           Stop tracking in <br/>
           <span className="text-primary italic relative drop-shadow-[0_0_15px_rgba(0,69,255,0.3)]">
             spreadsheets

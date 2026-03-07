@@ -49,7 +49,7 @@ export default async function PrivacyPolicyPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
                 { label: 'Secure Auth', desc: 'Managed by Supabase Enterprise Grade Security.' },
-                { label: 'Privacy First', desc: 'Your applications and CVs are encrypted and private.' },
+                { label: 'Privacy First', desc: 'Your applications and CVs are encrypted and private. OpenRouter keys are stored locally, not on our servers.' },
                 { label: 'No Data Selling', desc: 'We do not sell your professional data to third parties.' },
                 { label: 'Full Control', desc: 'Delete your account and all associated data instantly.' },
               ].map((item, i) => (

@@ -4,7 +4,7 @@
 import { Link, usePathname } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   User, 
@@ -15,9 +15,14 @@ import {
   Menu,
   X,
   Activity,
-  Settings
+  Settings,
+  Sparkles,
+  Key,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Spinner } from '../ui/spinner';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -33,6 +38,55 @@ export function Sidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [aiCredits, setAiCredits] = useState<number | null>(null);
+  const [hasByok, setHasByok] = useState(false);
+
+  useEffect(() => {
+    // Check for BYOK locally
+    setHasByok(!!localStorage.getItem("openrouter_key"));
+
+    let channel: any;
+
+    async function loadInitialCredits() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('ai_credits')
+        .eq('id', user.id)
+        .single();
+        
+      if (data) {
+        setAiCredits(data.ai_credits || 0);
+      }
+
+      // Setup Realtime Subscription
+      channel = supabase.channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_profiles',
+            filter: `id=eq.${user.id}`
+          },
+          (payload) => {
+            const newCredits = payload.new.ai_credits;
+            setAiCredits(newCredits || 0);
+          }
+        )
+        .subscribe();
+    }
+
+    loadInitialCredits();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [supabase]);
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -83,13 +137,50 @@ export function Sidebar() {
         })}
         </nav>
 
+        {/* AI Tier Display */}
+        <div className="px-5 py-4 border-t border-border">
+          <Link href="/dashboard/settings" onClick={() => setIsOpen(false)} className="block group">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Tier</span>
+              {hasByok ? (
+                <Badge variant="secondary" className="px-2 py-0.5 text-[10px] bg-primary/10 text-primary border-primary/20">
+                  <Key className="w-3 h-3 mr-1" /> BYOK
+                </Badge>
+              ) : aiCredits && aiCredits > 0 ? (
+                <Badge variant="default" className="px-2 py-0.5 text-[10px]">
+                  Premium
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="px-2 py-0.5 text-[10px]">
+                  Free
+                </Badge>
+              )}
+            </div>
+            
+            {!hasByok && (
+              <div className="flex items-center gap-2 mt-1">
+                <Sparkles className={cn("w-4 h-4 transition-colors", aiCredits && aiCredits > 0 ? "text-primary" : "text-muted-foreground")} />
+                { aiCredits === null ? <Spinner className='w-4' /> : null}
+                <span className={cn("text-sm font-medium", !aiCredits || aiCredits === 0 ? "text-muted-foreground" : "")}>
+                  {aiCredits === null ? "" : aiCredits} Credits
+                </span>
+              </div>
+            )}
+            {hasByok && (
+               <div className="text-xs text-muted-foreground mt-1.5 leading-tight">
+                 Using local API key.<br/>Credits paused.
+               </div>
+            )}
+          </Link>
+        </div>
+
         <div className="p-3 border-t border-border space-y-0.5">
-          <Link href="/dashboard/settings">
+          {/* <Link href="/dashboard/settings">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg group">
               <Settings className="h-4 w-4 group-hover:rotate-45 transition-transform" />
               Settings
             </button>
-          </Link>
+          </Link> */}
 
           <button 
             onClick={handleSignOut}

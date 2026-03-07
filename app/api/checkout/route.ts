@@ -1,22 +1,53 @@
-import { Checkout } from "@polar-sh/nextjs";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { Polar } from "@polar-sh/sdk";
+
+const polar = new Polar({
+  accessToken: process.env.POLAR_ACCESS_TOKEN as string,
+  server: (process.env.NEXT_PUBLIC_POLAR_SERVER || "sandbox") as "sandbox" | "production",
+});
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
+
   const { searchParams } = new URL(req.url);
-  // Default to 'en' if not specified, or try to detect from headers if needed.
-  // Using query param 'locale' if passed from the frontend links.
   const locale = searchParams.get('locale') || 'en';
+  const productId = searchParams.get('products');
+
+  if (!productId) {
+    return NextResponse.redirect(new URL(`/${locale}/dashboard/settings?error=invalid_product`, req.url));
+  }
   
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const localizedSuccessUrl = `${siteUrl}/${locale}/success?checkout_id={CHECKOUT_ID}`;
+  const localizedSuccessUrl = process.env.POLAR_SUCCESS_URL || `${siteUrl}/${locale}/dashboard/success?checkout_id={CHECKOUT_ID}`;
   
-  const checkoutHandler = Checkout({
-    accessToken: process.env.POLAR_ACCESS_TOKEN as string,
-    successUrl: localizedSuccessUrl,
-    returnUrl: siteUrl, 
-    server: (process.env.NEXT_PUBLIC_POLAR_SERVER || "sandbox") as "sandbox" | "production",
-    theme: "dark",
-  });
+  // const checkoutHandler = Checkout({
+  //   accessToken: process.env.POLAR_ACCESS_TOKEN as string,
+  //   successUrl: localizedSuccessUrl,
+  //   returnUrl: siteUrl, 
+  //   server: (process.env.NEXT_PUBLIC_POLAR_SERVER || "sandbox") as "sandbox" | "production",
+  //   theme: "dark",
+  // });
 
-  return (checkoutHandler as any)(req, { params: {} });
+  try {
+    const result = await polar.checkouts.create({
+      products: [productId],
+      externalCustomerId: user.id,
+      successUrl: localizedSuccessUrl,
+    });
+
+    if (result && result.url) {
+      return NextResponse.redirect(result.url);
+    } else {
+      throw new Error("Failed to create checkout session");
+    }
+  } catch (error) {
+    console.error("Polar Checkout Error:", error);
+    return NextResponse.redirect(new URL(`/${locale}/dashboard/settings?error=checkout_failed`, req.url));
+  }
 }

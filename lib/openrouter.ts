@@ -92,17 +92,19 @@ export async function callOpenRouter(
     console.warn('[OpenRouter] Actual Cost not provided by API, using manual estimate:', cost, usage);
   }
 
-  // adminSupabase.from('api_usage').insert({
-  //   user_id: metadata?.userId || null,
-  //   roast_id: metadata?.roastId || null,
-  //   platform: 'openrouter',
-  //   model: model.id,
-  //   tokens_input: usage.prompt_tokens,
-  //   tokens_output: usage.completion_tokens,
-  //   cost_estimate: cost,
-  // }).then(({ error }) => {
-  //   if (error) console.error('[OpenRouter] Failed to log API usage:', error);
-  // });
+  if (metadata?.userId) {
+    adminSupabase.from('api_usage' as any).insert({
+      user_id: metadata.userId,
+      roast_id: metadata?.roastId || null,
+      platform: 'openrouter',
+      model: model.id,
+      tokens_input: usage.prompt_tokens,
+      tokens_output: usage.completion_tokens,
+      cost_estimate: cost,
+    }).then(({ error }) => {
+      if (error) console.error('[OpenRouter] Failed to log API usage:', error);
+    });
+  }
 
   return {
     text,

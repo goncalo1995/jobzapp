@@ -38,6 +38,8 @@ function SettingsContent() {
   const [openRouterKey, setOpenRouterKey] = useState("");
 
   useEffect(() => {
+    let channel: any;
+
     async function loadCredits() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -52,6 +54,23 @@ function SettingsContent() {
         setAiCredits(data.ai_credits || 0);
       }
       setLoadingCredits(false);
+
+      // Setup Realtime Subscription
+      channel = supabase.channel('settings-db-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_profiles',
+            filter: `id=eq.${user.id}`
+          },
+          (payload) => {
+            const newCredits = payload.new.ai_credits;
+            setAiCredits(newCredits || 0);
+          }
+        )
+        .subscribe();
     }
     
     const savedKey = localStorage.getItem("openrouter_key");
@@ -60,6 +79,12 @@ function SettingsContent() {
     }
     
     loadCredits();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, [supabase]);
 
   useEffect(() => {

@@ -113,21 +113,21 @@ export default async function PricingPage() {
              <ShieldCheck className="h-8 w-8 text-primary" />
              <h4 className="font-heading font-black uppercase tracking-tight">Your Data is Yours</h4>
              <p className="text-xs text-muted-foreground leading-relaxed">
-               Core tracking features will always remain free. We don't sell your data to recruiters or third parties.
+               Core tracking features will always remain free. We don't sell your data to recruiters, and your OpenRouter API keys are stored only in your browser.
              </p>
           </div>
           <div className="space-y-4">
              <BookOpen className="h-8 w-8 text-primary" />
              <h4 className="font-heading font-black uppercase tracking-tight">Open Roadmap</h4>
              <p className="text-xs text-muted-foreground leading-relaxed">
-               We're building JobZapp in the open. New features are added weekly based on user feedback.
+               We're building JobZapp in the open. Our new credit-based AI Copilot lets you pay only for exactly what you use.
              </p>
           </div>
           <div className="space-y-4">
              <Zap className="h-8 w-8 text-primary" />
              <h4 className="font-heading font-black uppercase tracking-tight">High Speed</h4>
              <p className="text-xs text-muted-foreground leading-relaxed">
-               Optimized for professionals who value their time. Maximum efficiency, zero bloat.
+               Optimized for professionals who value their time. Maximum efficiency, zero bloat. Bring your own key for limitless automated edge testing.
              </p>
           </div>
         </div>

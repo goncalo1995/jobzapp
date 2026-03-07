@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TAILOR_SYSTEM_PROMPT } from '@/lib/prompts';
 
 export default function NewCVPage() {
@@ -20,6 +21,7 @@ export default function NewCVPage() {
   
   const [jobDescription, setJobDescription] = useState('');
   const [tailoring, setTailoring] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
   const [formData, setFormData] = useState({
     name: 'My New CV',
     target_role: '',
@@ -89,7 +91,7 @@ export default function NewCVPage() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            model: "anthropic/claude-3.5-sonnet",
+            model: selectedModel,
             response_format: { type: "json_object" },
             messages: [
               { role: "system", content: TAILOR_SYSTEM_PROMPT },
@@ -125,7 +127,7 @@ export default function NewCVPage() {
         const res = await fetch('/api/cv/tailor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profile: cvData, jobDescription }),
+          body: JSON.stringify({ profile: cvData, jobDescription, model: selectedModel }),
         });
         data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -242,15 +244,28 @@ export default function NewCVPage() {
                 placeholder="Paste the job requirements here..."
                 className="min-h-[300px] text-sm leading-relaxed resize-none bg-secondary/30"
               />
-              <Button 
-                onClick={handleTailor} 
-                disabled={tailoring || !profile?.parsed_data} 
-                className="w-full"
-                variant="outline"
-              >
-                {tailoring ? 'Tailoring...' : 'Tailor with AI'}
-                <Sparkles className="ml-1.5 h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger className="w-1/2 bg-background border-border">
+                    <SelectValue placeholder="Select AI Model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (2 Cr)</SelectItem>
+                    <SelectItem value="openai/gpt-4o">GPT-4o (2 Cr)</SelectItem>
+                    <SelectItem value="openai/gpt-4o-mini">GPT-4o mini (1 Cr)</SelectItem>
+                    <SelectItem value="google/gemini-2.5-flash">Gemini 2.5 Flash (1 Cr)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button 
+                  onClick={handleTailor} 
+                  disabled={tailoring || !profile?.parsed_data} 
+                  className="w-1/2"
+                  variant="outline"
+                >
+                  {tailoring ? 'Tailoring...' : 'Tailor'}
+                  <Sparkles className="ml-1.5 h-4 w-4" />
+                </Button>
+              </div>
               {!profile?.parsed_data && (
                 <p className="text-[10px] text-destructive flex items-center gap-1.5">
                   <AlertCircle className="h-3 w-3" />

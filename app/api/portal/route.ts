@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
   const polarPortalHandler = CustomerPortal({
     accessToken: process.env.POLAR_ACCESS_TOKEN as string,
     getCustomerId: async () => customerId,
-    returnUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000/dashboard/settings",
+    returnUrl: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/dashboard/settings`,
     server: (process.env.NEXT_PUBLIC_POLAR_SERVER || "sandbox") as "sandbox" | "production",
   });
 

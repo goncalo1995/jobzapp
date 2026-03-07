@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_credit_logs: {
+        Row: {
+          action_type: string
+          amount: number
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          amount: number
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          amount?: number
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      api_usage: {
+        Row: {
+          cost_estimate: number | null
+          created_at: string | null
+          id: string
+          model: string
+          platform: string
+          roast_id: string | null
+          tokens_input: number | null
+          tokens_output: number | null
+          user_id: string
+        }
+        Insert: {
+          cost_estimate?: number | null
+          created_at?: string | null
+          id?: string
+          model: string
+          platform: string
+          roast_id?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id: string
+        }
+        Update: {
+          cost_estimate?: number | null
+          created_at?: string | null
+          id?: string
+          model?: string
+          platform?: string
+          roast_id?: string | null
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           created_at: string | null
@@ -548,9 +608,33 @@ export type Database = {
           },
         ]
       }
+      processed_checkouts: {
+        Row: {
+          amount: number
+          checkout_id: string
+          created_at: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          checkout_id: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          checkout_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
-          ai_credits: number | null
+          ai_credits: number
           created_at: string | null
           default_cv_id: string | null
           email: string | null
@@ -562,7 +646,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          ai_credits?: number | null
+          ai_credits?: number
           created_at?: string | null
           default_cv_id?: string | null
           email?: string | null
@@ -574,7 +658,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          ai_credits?: number | null
+          ai_credits?: number
           created_at?: string | null
           default_cv_id?: string | null
           email?: string | null
@@ -600,7 +684,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      deduct_ai_credits: {
+        Args: { amount: number; target_user_id: string }
+        Returns: boolean
+      }
+      handle_successful_checkout: {
+        Args: { _checkout_id: string; _credit_amount: number; _user_id: string }
+        Returns: undefined
+      }
+      increment_ai_credits: {
+        Args: { amount: number; user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       application_status:
