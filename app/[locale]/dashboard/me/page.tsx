@@ -99,13 +99,17 @@ export default function ProfilePage() {
     }
     setParsing(true);
     try {
+      const savedKey = localStorage.getItem("openrouter_key");
       const res = await fetch('/api/me/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rawBio }),
+        body: JSON.stringify({ 
+          rawBio,
+          customApiKey: savedKey || undefined
+        }),
       });
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!res.ok || data.error) throw new Error(data.error || 'Parsing failed');
       setProfile((prev: any) => ({ ...prev, parsed_data: data.parsedData }));
       setStructuredData(data.parsedData);
       toast.success('Career data extracted successfully');

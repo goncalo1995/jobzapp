@@ -27,19 +27,29 @@ async function grantCredits(payload: any) {
   // Extract data from the payload (Payload can be an Order or a Subscription event)
   const eventData = payload.data;
   
-  // Try to find the user ID in customer or customer_id
-  const userId = eventData.customer?.external_id || eventData.customer_external_id;
-  const productId = eventData.product_id || eventData.product?.id || eventData.subscription?.product_id;
+  // Try to find the user ID in customer or metadata
+  const userId = 
+    eventData.customer?.external_id || 
+    eventData.customer_external_id || 
+    eventData.customer?.metadata?.userId ||
+    eventData.metadata?.userId;
+  
+  const productId = 
+    eventData.product_id || 
+    eventData.product?.id || 
+    eventData.subscription?.product_id;
   
   console.log("Polar Webhook - Event Data Details:", {
     userId,
     productId,
     orderId: eventData.id,
-    type: payload.type
+    type: payload.type,
+    metadata: eventData.metadata,
+    customerMetadata: eventData.customer?.metadata
   });
 
   if (!userId) {
-    console.error("Polar Webhook Error: No customer external_id (userId) found in payload");
+    console.error("Polar Webhook Error: No customer external_id (userId) found in payload. Check metadata:", eventData.metadata);
     return;
   }
 

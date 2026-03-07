@@ -38,12 +38,12 @@ The JSON should follow this structure:
 Be concise. If information is missing, leave it as null or an empty array. Do not hallucinate.
 `;
 
-export async function parseCareerBio(rawBio: string, userId: string) {
+export async function parseCareerBio(rawBio: string, userId: string, customApiKey?: string) {
   const result = await callOpenRouter(
     PARSING_SYSTEM_PROMPT,
     `Extract career data from this text:\n\n${rawBio}`,
     'claude-3-5-sonnet',
-    { userId }
+    { userId, customApiKey }
   );
 
   return parseAIJSON(result.text);

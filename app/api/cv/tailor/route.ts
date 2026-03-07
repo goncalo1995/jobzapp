@@ -26,23 +26,26 @@ export async function POST(request: Request) {
     //   return NextResponse.json({ error: 'Currently only available for beta users' }, { status: 401 });
     // }
 
-    const { profile, jobDescription, model = "anthropic/claude-3.5-sonnet" } = await request.json();
+    const { profile, jobDescription, model = "anthropic/claude-3.5-sonnet", customApiKey } = await request.json();
 
     const expectedCost = MODEL_COSTS[model] || 2;
+    const isByok = !!customApiKey;
 
     if (!profile || !jobDescription) {
       return NextResponse.json({ error: 'Missing profile or job description' }, { status: 400 });
     }
 
-    // Secure decrement: atomic check and deduction BEFORE AI call
-    const { data: success, error: deductError } = await supabase.rpc('deduct_ai_credits' as any, {
-      user_id: user.id,
-      amount: expectedCost
-    });
+    // Secure decrement: atomic check and deduction BEFORE AI call (SKIP if BYOK)
+    if (!isByok) {
+      const { data: success, error: deductError } = await supabase.rpc('deduct_ai_credits' as any, {
+        user_id: user.id,
+        amount: expectedCost
+      });
 
-    if (deductError || !success) {
-      console.warn('[AI Tailor] Insufficient credits or deduct error:', deductError);
-      return NextResponse.json({ error: `Not enough AI Credits. This model requires ${expectedCost} credits.` }, { status: 402 });
+      if (deductError || !success) {
+        console.warn('[AI Tailor] Insufficient credits or deduct error:', deductError);
+        return NextResponse.json({ error: `Not enough AI Credits. This model requires ${expectedCost} credits.` }, { status: 402 });
+      }
     }
 
     const userPrompt = `
@@ -60,7 +63,10 @@ Please tailor this CV data to the job description above.
         TAILOR_SYSTEM_PROMPT,
         userPrompt,
         model,
-        { userId: user.id }
+        { 
+          userId: user.id,
+          customApiKey: customApiKey
+        }
       );
 
       const tailoredData = parseAIJSON(result.text);

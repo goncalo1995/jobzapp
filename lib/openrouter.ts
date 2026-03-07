@@ -38,6 +38,7 @@ export const CHAT_MODELS: Record<string, ChatModel> = {
 export interface AIServiceMetadata {
   userId?: string | null;
   roastId?: string;
+  customApiKey?: string;
 }
 
 export async function callOpenRouter(
@@ -47,7 +48,8 @@ export async function callOpenRouter(
   metadata?: AIServiceMetadata,
   jsonMode: boolean = true
 ) {
-  if (!process.env.OPENROUTER_API_KEY) {
+  const apiKey = metadata?.customApiKey || process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
     throw new Error('OpenRouter API key not found');
   }
   const model = CHAT_MODELS[modelKey];
@@ -71,7 +73,7 @@ export async function callOpenRouter(
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify(body)

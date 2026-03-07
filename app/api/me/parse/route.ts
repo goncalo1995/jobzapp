@@ -18,27 +18,30 @@ export async function POST(request: Request) {
     //   return NextResponse.json({ error: 'Currently only available for beta users' }, { status: 401 });
     // }
 
-    const { rawBio } = await request.json();
+    const { rawBio, customApiKey } = await request.json();
 
     if (!rawBio) {
       return NextResponse.json({ error: 'Missing bio content' }, { status: 400 });
     }
 
     const expectedCost = 2; // Fixed cost for claude-3-5-sonnet
+    const isByok = !!customApiKey;
 
-    // Secure decrement: atomic check and deduction BEFORE AI call
-    const { data: success, error: deductError } = await supabase.rpc('deduct_ai_credits' as any, {
-      user_id: user.id,
-      amount: expectedCost
-    });
+    // Secure decrement: atomic check and deduction BEFORE AI call (SKIP if BYOK)
+    if (!isByok) {
+      const { data: success, error: deductError } = await supabase.rpc('deduct_ai_credits' as any, {
+        user_id: user.id,
+        amount: expectedCost
+      });
 
-    if (deductError || !success) {
-      console.warn('[AI Parse] Insufficient credits or deduct error:', deductError);
-      return NextResponse.json({ error: `Not enough AI Credits. This action requires ${expectedCost} credits.` }, { status: 402 });
+      if (deductError || !success) {
+        console.warn('[AI Parse] Insufficient credits or deduct error:', deductError);
+        return NextResponse.json({ error: `Not enough AI Credits. This action requires ${expectedCost} credits.` }, { status: 402 });
+      }
     }
 
     try {
-      const parsedData = await parseCareerBio(rawBio, user.id);
+      const parsedData = await parseCareerBio(rawBio, user.id, customApiKey);
 
       const { error } = await supabase
         .from('user_profiles')

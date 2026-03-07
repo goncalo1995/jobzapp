@@ -37,8 +37,10 @@ export async function GET(req: NextRequest) {
   try {
     const result = await polar.checkouts.create({
       products: [productId],
-      externalCustomerId: user.id,
       successUrl: localizedSuccessUrl,
+      metadata: {
+        userId: user.id
+      }
     });
 
     if (result && result.url) {
