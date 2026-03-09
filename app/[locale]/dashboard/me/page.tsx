@@ -1,6 +1,9 @@
 // app/[locale]/dashboard/me/page.tsx
 'use client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User, Wand2, Save, CheckCircle, Plus, Trash2, Briefcase, GraduationCap, Code2, Type, Sparkles } from 'lucide-react';

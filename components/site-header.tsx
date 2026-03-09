@@ -15,13 +15,13 @@ export function SiteHeader() {
         <nav className="flex items-center gap-8">
           <Link 
             href="/pricing" 
-            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest hidden md:block"
+            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest hidden sm:block"
           >
             {t('nav.pricing')}
           </Link>
           <Link 
             href="/blog" 
-            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest hidden md:block"
+            className="text-sm font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest hidden sm:block"
           >
             {t('nav.blog')}
           </Link>

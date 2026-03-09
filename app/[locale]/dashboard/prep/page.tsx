@@ -783,5 +783,3 @@ export default function InterviewPrepPage() {
     </div>
   );
 }
-
-export const dynamic = 'force-dynamic';

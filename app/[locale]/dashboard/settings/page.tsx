@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Key, ExternalLink, Book, BookOpen, CreditCard } from "lucide-react";
+import { Sparkles, Key, ExternalLink, BookOpen, CreditCard, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
-import { useSearchParams, useParams } from "next/navigation";
+import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { X, AlertTriangle } from "lucide-react";
 
@@ -37,6 +37,8 @@ function SettingsContent() {
   
   const [openRouterKey, setOpenRouterKey] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -75,6 +77,32 @@ function SettingsContent() {
     setOpenRouterKey("");
     localStorage.removeItem("jobzapp_openrouter_key");
     toast.success(t("byok.savedText"));
+  };
+
+  const handleDeleteAccount = async () => {
+    // Basic native confirm for the danger zone
+    if (!confirm("Are you absolutely sure you want to permanently delete your account and all associated data? This action cannot be undone.")) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch('/api/me/delete', { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Account permanently deleted.");
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push('/');
+        router.refresh();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to delete account");
+        setIsDeleting(false);
+      }
+    } catch (error) {
+       toast.error("An unexpected error occurred");
+       setIsDeleting(false);
+    }
   };
 
   return (
@@ -208,6 +236,36 @@ function SettingsContent() {
             </Button>
             <Button onClick={handleSaveKey}>
               {t("byok.saveKey")}
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="border-destructive/20 shadow-none border-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive font-bold">
+              <AlertTriangle className="w-5 h-5" />
+              Danger Zone
+            </CardTitle>
+            <CardDescription>
+              Permanently delete your account and all associated data (Resumes, Job Applications, Preparations).
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div className="bg-destructive/10 text-destructive text-sm p-4 rounded-lg flex items-start gap-3">
+               <Trash2 className="w-5 h-5 shrink-0 mt-0.5" />
+               <p>
+                 <strong>Warning:</strong> This action cannot be undone. This will permanently delete your JobZapp account and immediately revoke your access to any remaining AI credits.
+               </p>
+             </div>
+          </CardContent>
+          <CardFooter className="flex justify-end border-t p-4 rounded-b-xl border-destructive/20">
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete Account"}
             </Button>
           </CardFooter>
         </Card>

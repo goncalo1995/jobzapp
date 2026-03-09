@@ -26,6 +26,9 @@ export function SiteFooter() {
               <Link href="/blog" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
                 {t('links.blog')}
               </Link>
+              <Link href="/terms" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
+                Terms
+              </Link>
               <Link href="/privacy-policy" className="text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest">
                 {t('links.privacyPolicy')}
               </Link>

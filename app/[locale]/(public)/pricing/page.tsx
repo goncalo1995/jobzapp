@@ -1,3 +1,5 @@
+export const dynamic = 'force-static';
+
 import { getTranslations } from 'next-intl/server';
 import { Check, Sparkles, ArrowRight, Zap, Target, BookOpen, ShieldCheck } from 'lucide-react';
 import { Link } from '@/i18n/navigation';

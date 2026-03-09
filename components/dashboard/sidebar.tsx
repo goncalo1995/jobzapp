@@ -35,7 +35,6 @@ const NAV_ITEMS = [
   { href: '/dashboard/cvs', label: 'Resumes', icon: FileText },
   { href: '/dashboard/prep', label: 'Interview Prep', icon: Sparkles },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
-  { href: '/dashboard/activity', label: 'Activity', icon: Activity },
 ];
 
 import { useProfile } from '@/components/providers/profile-provider';
@@ -95,9 +94,8 @@ export function Sidebar() {
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href) && item.href !== '/dashboard/prep');
             const Icon = item.icon;
             
-            return (
+            const linkContent = (
               <Link
-                key={item.href}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
                 className={cn(
@@ -107,16 +105,34 @@ export function Sidebar() {
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
-                title={isCollapsed ? item.label : undefined}
               >
-              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-inherit")} />
-              {!isCollapsed && <span>{item.label}</span>}
-              {isActive && !isCollapsed && (
-                <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
-              )}
-            </Link>
-          );
-        })}
+                <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-inherit")} />
+                {!isCollapsed && <span>{item.label}</span>}
+                {isActive && !isCollapsed && (
+                  <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                )}
+              </Link>
+            );
+            
+            return (
+              <div key={item.href}>
+                {isCollapsed ? (
+                  <TooltipProvider disableHoverableContent>
+                    <Tooltip delayDuration={100}>
+                      <TooltipTrigger asChild>
+                        {linkContent}
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        <p>{item.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  linkContent
+                )}
+              </div>
+            );
+          })}
         </nav>
 
         {/* AI Tier Display */}
@@ -168,7 +184,7 @@ export function Sidebar() {
                 {hasByok ? <Key className="w-5 h-5 text-primary" /> : <Sparkles className={cn("w-5 h-5", aiCredits > 0 ? "text-primary" : "text-muted-foreground")} />}
               </Link>
               </TooltipTrigger>
-              <TooltipContent>
+              <TooltipContent side="right">
                 <p>{hasByok ? "BYOK Mode" : `${aiCredits} Credits`}</p>
               </TooltipContent>
             </Tooltip>
