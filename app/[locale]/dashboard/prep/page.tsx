@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Briefcase, FileText, Loader2, Sparkles, MessageCircle, 
   AlertCircle, CheckCircle2, GraduationCap, Clock, Flame, 
-  Eye, EyeOff, Lightbulb, BookOpen, History
+  Eye, EyeOff, Lightbulb, BookOpen, History, Trash2, Code, LayoutTemplate, Zap, ShieldAlert, Calendar, CalendarDays, Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { AIModelSelector } from "@/components/ai/model-selector";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,7 +58,10 @@ interface PrepHistoryItem extends PrepData {
 function PrepForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialInterviewId = searchParams.get('interviewId');
+  const paramInterviewId = searchParams.get('interviewId');
+
+  const [selectedInterviewId, setSelectedInterviewId] = useState<string | null>(paramInterviewId);
+  const [interviewsList, setInterviewsList] = useState<any[]>([]);
 
   const [profile, setProfile] = useState<any>(null);
   const [jobDescription, setJobDescription] = useState("");
@@ -82,7 +85,7 @@ function PrepForm() {
   // UI State
   const [revealedQuestions, setRevealedQuestions] = useState<Record<number, boolean>>({});
   const [showHints, setShowHints] = useState<Record<number, boolean>>({});
-  const [activeTab, setActiveTab] = useState("questions");
+  const [activeTab, setActiveTab] = useState("insights");
 
   const supabase = createClient();
 
@@ -106,16 +109,32 @@ function PrepForm() {
           setProfile(profileData.parsed_data);
         }
 
-        if (initialInterviewId) {
-          // Fetch the interview details and the parent job description
+        // Fetch all interviews for the dropdown
+        const { data: allInterviews } = await supabase
+          .from('interviews')
+          .select(`
+            id,
+            round,
+            type,
+            interview_date,
+            job_applications!inner(company_name_denormalized, position)
+          `)
+          .eq('job_applications.user_id', user.id)
+          .order('created_at', { ascending: false });
+        
+        if (allInterviews) {
+          setInterviewsList(allInterviews);
+        }
+
+        if (selectedInterviewId) {
+          // Fetch the chosen interview details and the parent job description
           const { data: interviewData } = await supabase
             .from("interviews")
             .select(`
               *,
               job_applications!inner(job_description)
             `)
-            .eq("id", initialInterviewId)
-            // ensure ownership
+            .eq("id", selectedInterviewId)
             .eq('job_applications.user_id', user.id)
             .single();
             
@@ -128,13 +147,30 @@ function PrepForm() {
             
             // Handle loading history from interviews table
             if (interviewData.ai_prep_data && Array.isArray(interviewData.ai_prep_data)) {
-              const loadedHistory = interviewData.ai_prep_data as unknown as PrepHistoryItem[];
+              let loadedHistory = interviewData.ai_prep_data as unknown as PrepHistoryItem[];
+              
+              // Map any legacy records missing an ID
+              loadedHistory = loadedHistory.map((p, idx) => ({
+                ...p,
+                id: p.id || `legacy-${idx}-${new Date(p.created_at || Date.now()).getTime()}`
+              }));
+
               if (loadedHistory.length > 0) {
                 setHistory(loadedHistory);
                 setSelectedPrepId(loadedHistory[loadedHistory.length - 1].id); // Select latest
+              } else {
+                setHistory([]);
+                setSelectedPrepId(null);
               }
+            } else {
+              setHistory([]);
+              setSelectedPrepId(null);
             }
           }
+        } else {
+           setInterviewContext(null);
+           setHistory([]);
+           setSelectedPrepId(null);
         }
       } catch (err) {
         console.error('Error fetching context:', err);
@@ -144,7 +180,7 @@ function PrepForm() {
       }
     }
     fetchContext();
-  }, [supabase, initialInterviewId, router]);
+  }, [supabase, selectedInterviewId, router]);
 
   async function handleGeneratePrep() {
     // Reset error state
@@ -163,7 +199,7 @@ function PrepForm() {
     setLoading(true);
     setRevealedQuestions({});
     setShowHints({});
-    setActiveTab("questions");
+    setActiveTab("insights");
 
     try {
       const savedKey = localStorage.getItem("jobzapp_openrouter_key");
@@ -180,7 +216,7 @@ function PrepForm() {
           prepType,
           hardness,
           timeToPrepare,
-          interviewId: initialInterviewId
+          interviewId: selectedInterviewId || undefined
         }),
       });
       
@@ -195,7 +231,7 @@ function PrepForm() {
         setSelectedPrepId(data.prepData.id);
         toast.success("Interview prep generated successfully!");
         
-        if (initialInterviewId) {
+        if (selectedInterviewId) {
           toast.info("Saved automatically to this interview record.");
         }
       } else {
@@ -228,10 +264,34 @@ function PrepForm() {
 
   const getPrepTypeIcon = (type: string) => {
     switch(type?.toLowerCase()) {
-      case 'behavioral': return '👥';
-      case 'technical': return '💻';
-      case 'case study': return '📊';
-      default: return '⚖️';
+      case 'behavioral': return <MessageCircle className="w-3 h-3"/>;
+      case 'technical': return <Code className="w-3 h-3"/>;
+      case 'case study': return <LayoutTemplate className="w-3 h-3"/>;
+      default: return <Activity className="w-3 h-3"/>;
+    }
+  };
+
+  const handleDeletePrep = async () => {
+    if (!selectedInterviewId || !selectedPrepId) return;
+    
+    // Optimistic UI
+    const previousHistory = [...history];
+    const previousSelected = selectedPrepId;
+    
+    const newHistory = history.filter(p => p.id !== selectedPrepId);
+    setHistory(newHistory);
+    setSelectedPrepId(newHistory.length > 0 ? newHistory[newHistory.length - 1].id : null);
+    
+    try {
+      const res = await fetch(`/api/prep/${selectedInterviewId}/${selectedPrepId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error("Failed to delete prep");
+      toast.success("Preparation deleted");
+    } catch (err) {
+      toast.error("Could not delete preparation");
+      setHistory(previousHistory);
+      setSelectedPrepId(previousSelected);
     }
   };
 
@@ -257,34 +317,63 @@ function PrepForm() {
                 <Briefcase className="h-4 w-4 text-primary" />
                 Context Setup
               </CardTitle>
-              {interviewContext && (
-                <CardDescription className="font-medium text-foreground">
-                  Preparing for Round {interviewContext.round}: {interviewContext.type} 
-                </CardDescription>
-              )}
+              <div className="pt-2">
+                <Select value={selectedInterviewId || "none"} onValueChange={(val) => {
+                  setSelectedInterviewId(val === "none" ? null : val);
+                  if (val !== "none") {
+                     router.replace(`/dashboard/prep?interviewId=${val}`, { scroll: false });
+                  } else {
+                     router.replace(`/dashboard/prep`, { scroll: false });
+                  }
+                }}>
+                  <SelectTrigger className="w-full h-9 text-xs bg-background">
+                    <SelectValue placeholder="Link to an Interview (Optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-muted-foreground italic">No interview selected (General Prep)</SelectItem>
+                    <SelectGroup>
+                      <SelectLabel className="text-[10px] uppercase text-muted-foreground">Your Interviews</SelectLabel>
+                      {interviewsList.map(intv => (
+                        <SelectItem key={intv.id} value={intv.id}>
+                          {intv.job_applications?.company_name_denormalized} - {intv.job_applications?.position} (R{intv.round})
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-6 pt-6">
+            <CardContent className="space-y-6">
               
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-semibold flex items-center gap-2">
-                    <FileText className="h-4 w-4" /> Job Description
-                  </label>
-                  {jobDescription.length > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      {jobDescription.length} chars
-                    </Badge>
-                  )}
-                </div>
-                <Textarea 
-                  placeholder="Paste the full job description here..."
-                  className="min-h-[150px] text-xs font-mono resize-y"
-                  value={jobDescription}
-                  onChange={(e) => setJobDescription(e.target.value)}
-                />
+                <Accordion type="single" collapsible defaultValue={jobDescription ? undefined : "item-1"}>
+                  <AccordionItem value="item-1" className="border-none">
+                    <AccordionTrigger className="hover:no-underline py-2">
+                      <div className="flex items-center gap-2 w-full justify-between pr-4">
+                        <label className="text-sm font-semibold flex items-center gap-2 cursor-pointer">
+                          <FileText className="h-4 w-4" /> Job Description
+                        </label>
+                        {jobDescription.length > 0 && (
+                          <Badge variant={jobDescription.length === 5000 ? "destructive" : "outline"} className="text-xs">
+                            {jobDescription.length} chars
+                          </Badge>
+                        )}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <Textarea 
+                        placeholder="Paste the full job description here..."
+                        className="min-h-[150px] max-h-[300px] text-xs font-mono resize-y"
+                        value={jobDescription}
+                        onChange={(e) => setJobDescription(e.target.value)}
+                        maxLength={5000}
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
 
-              <div className="space-y-4 pt-2 border-t border-border">
+                <div className="space-y-4 pt-2 border-t border-border">
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold flex items-center gap-1.5 text-muted-foreground">
                     <GraduationCap className="w-3.5 h-3.5"/> Preparation Type
@@ -294,10 +383,10 @@ function PrepForm() {
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Mixed">⚖️ Mixed (Balanced)</SelectItem>
-                      <SelectItem value="Behavioral">👥 Strictly Behavioral</SelectItem>
-                      <SelectItem value="Technical">💻 Technical / Coding</SelectItem>
-                      <SelectItem value="Case Study">📊 System Design / Case Study</SelectItem>
+                      <SelectItem value="Mixed"><div className="flex items-center gap-2"><Activity className="w-3 h-3"/> Mixed (Balanced)</div></SelectItem>
+                      <SelectItem value="Behavioral"><div className="flex items-center gap-2"><MessageCircle className="w-3 h-3"/> Strictly Behavioral</div></SelectItem>
+                      <SelectItem value="Technical"><div className="flex items-center gap-2"><Code className="w-3 h-3"/> Technical / Coding</div></SelectItem>
+                      <SelectItem value="Case Study"><div className="flex items-center gap-2"><LayoutTemplate className="w-3 h-3"/> System Design / Case Study</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -311,8 +400,8 @@ function PrepForm() {
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Standard">🟢 Standard (Realistic)</SelectItem>
-                      <SelectItem value="Hardcore">🔴 Hardcore (Pressure Test)</SelectItem>
+                      <SelectItem value="Standard"><div className="flex items-center gap-2"><CheckCircle2 className="w-3 h-3 text-emerald-500"/> Standard (Realistic)</div></SelectItem>
+                      <SelectItem value="Hardcore"><div className="flex items-center gap-2"><ShieldAlert className="w-3 h-3 text-rose-500"/> Hardcore (Pressure Test)</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -326,10 +415,10 @@ function PrepForm() {
                       <SelectValue placeholder="Time available" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1 hour">⏱️ 1 Hour (Panic Mode)</SelectItem>
-                      <SelectItem value="1 day">📅 1 Day</SelectItem>
-                      <SelectItem value="1 week">📆 1 Week</SelectItem>
-                      <SelectItem value="1 month">🗓️ 1 Month (Deep Dive)</SelectItem>
+                      <SelectItem value="1 hour"><div className="flex items-center gap-2"><Zap className="w-3 h-3"/> 1 Hour (Panic Mode)</div></SelectItem>
+                      <SelectItem value="1 day"><div className="flex items-center gap-2"><Clock className="w-3 h-3"/> 1 Day</div></SelectItem>
+                      <SelectItem value="1 week"><div className="flex items-center gap-2"><Calendar className="w-3 h-3"/> 1 Week</div></SelectItem>
+                      <SelectItem value="1 month"><div className="flex items-center gap-2"><CalendarDays className="w-3 h-3"/> 1 Month (Deep Dive)</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -399,21 +488,28 @@ function PrepForm() {
                 <span className="text-sm font-medium">Preparation History</span>
               </div>
               
-              <Select value={selectedPrepId || ""} onValueChange={setSelectedPrepId}>
-                <SelectTrigger className="w-[280px] h-9 text-xs bg-background">
-                  <SelectValue placeholder="Select previous prep" />
-                </SelectTrigger>
-                <SelectContent>
-                  {history.map((prep, idx) => (
-                    <SelectItem key={prep.id} value={prep.id}>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] px-1 py-0 capitalize">{prep.config?.type || 'Mixed'}</Badge>
-                        <span>{new Date(prep.created_at).toLocaleDateString()} at {new Date(prep.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <Select value={selectedPrepId || ""} onValueChange={setSelectedPrepId}>
+                  <SelectTrigger className="w-[280px] h-9 text-xs bg-background">
+                    <SelectValue placeholder="Select previous prep" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {history.map((prep, idx) => (
+                      <SelectItem key={prep.id} value={prep.id}>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px] px-1 py-0 capitalize">{prep.config?.type || 'Mixed'}</Badge>
+                          <span>{new Date(prep.created_at).toLocaleDateString()} at {new Date(prep.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedInterviewId && selectedPrepId && (
+                  <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-destructive shrink-0" onClick={handleDeletePrep}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           )}
 
@@ -424,7 +520,7 @@ function PrepForm() {
               <Card className="bg-muted/30">
                 <CardContent className="pt-4">
                   <div className="flex flex-wrap gap-3 items-center text-sm">
-                    <Badge variant="outline" className="py-1 capitalize">
+                    <Badge variant="outline" className="py-1 capitalize gap-1 flex items-center">
                       {getPrepTypeIcon(currentPrep.config?.type)} {currentPrep.config?.type || 'Mixed'}
                     </Badge>
                     <Badge className={getDifficultyColor(currentPrep.config?.difficulty || 'Standard')}>
@@ -440,9 +536,9 @@ function PrepForm() {
               {/* Tabs for structured layout */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="insights">Insights</TabsTrigger>
                   <TabsTrigger value="questions">Questions</TabsTrigger>
                   <TabsTrigger value="plan">Training Plan</TabsTrigger>
-                  <TabsTrigger value="insights">Insights</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="questions" className="space-y-4 mt-4">
@@ -638,12 +734,24 @@ function PrepForm() {
             </div>
           ) : (
             <div className="h-full min-h-[400px] flex flex-col items-center justify-center space-y-4 border-2 border-dashed rounded-xl p-10 bg-muted/5 text-muted-foreground">
-              <Sparkles className="h-12 w-12 opacity-20" />
-              <p className="text-sm font-medium">Configure your settings and hit generate to craft your custom prep guide.</p>
-              {initialInterviewId && (
-                <p className="text-xs text-center max-w-md text-muted-foreground/60">
-                  Your preparation will be automatically tied to this specific interview round.
-                </p>
+              {selectedInterviewId && history.length === 0 ? (
+                 <>
+                   <History className="h-12 w-12 opacity-20 text-primary" />
+                   <h3 className="text-lg font-semibold text-foreground">No Preparations Yet</h3>
+                   <p className="text-sm font-medium max-w-sm text-center">
+                     You haven't generated any preparations for this interview round. Adjust your settings on the left and click generate to begin!
+                   </p>
+                 </>
+              ) : (
+                 <>
+                   <Sparkles className="h-12 w-12 opacity-20" />
+                   <p className="text-sm font-medium">Configure your settings and hit generate to craft your custom prep guide.</p>
+                   {selectedInterviewId && (
+                     <p className="text-xs text-center max-w-md text-muted-foreground/60">
+                       Your preparation will be automatically tied to this specific interview round.
+                     </p>
+                   )}
+                 </>
               )}
             </div>
           )}

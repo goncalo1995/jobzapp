@@ -300,8 +300,11 @@ export default function EditCVPage({ params }: { params: Promise<{ id: string }>
                      <span className="text-xs font-semibold">AI Assistant</span>
                    </div>
                    <p className="text-[11px] text-muted-foreground leading-relaxed">
-                     To perform a new AI-powered tailoring, create a new resume from the main dashboard.
+                     Would you like to perform a new AI-powered tailoring?
                    </p>
+                   <Button onClick={() => router.push('/dashboard/cvs/new')}>
+                     Create New Resume
+                   </Button>
                 </div>
               </>
             )}

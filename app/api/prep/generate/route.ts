@@ -86,6 +86,10 @@ ${customFocus ? `CANDIDATE CUSTOM FOCUS:\n${customFocus}` : ''}
 
       const parsedJson = parseAIJSON<any>(aiResponse.text);
 
+      if (parsedJson.error) {
+        throw new Error(parsedJson.error);
+      }
+
       const newPrep = {
         id: crypto.randomUUID(),
         created_at: new Date().toISOString(),

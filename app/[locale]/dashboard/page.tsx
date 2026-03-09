@@ -58,7 +58,7 @@ export default async function DashboardPage() {
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
           <div key={i} className="bg-card border border-border rounded-xl p-5 hover:border-primary/30 transition-all group">
             <div className="flex justify-between items-start mb-3">
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
                 <Activity className="h-4 w-4 text-primary" /> Recent Activity
               </h2>
               <Link href="/dashboard/activity" className="text-xs font-medium text-primary hover:underline flex items-center gap-1">
-                Tracker <ArrowRight className="h-3 w-3" />
+                View All
               </Link>
             </div>
             <div className="p-5 flex flex-col gap-3">
