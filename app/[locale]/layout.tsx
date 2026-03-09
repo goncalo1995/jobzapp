@@ -1,16 +1,19 @@
+import { Suspense } from 'react';
 import type { Metadata, Viewport } from 'next'
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google'
-import { hasLocale, NextIntlClientProvider } from 'next-intl';
-import '../globals.css'
+import { Inter, Outfit } from 'next/font/google'
+import { NextIntlClientProvider } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
-import { Toaster } from '@/components/ui/sonner';
+import '../globals.css'
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { Toaster } from '@/components/ui/toaster';
+import { ProfileProvider } from "@/components/providers/profile-provider"
+import { ReferralTracker } from '@/components/referral-tracker';
 
-const plusJakarta = Plus_Jakarta_Sans({ 
+const outfit = Outfit({ 
   subsets: ['latin'],
   variable: '--font-heading',
-  weight: ['500', '600', '700', '800'],
 })
 
 const inter = Inter({ 
@@ -19,16 +22,13 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'JobZapp | AI Job Tracker & Career OS',
-    template: '%s | JobZapp',
-  },
-  description: 'High-speed job application tracking with AI precision. Tailor your CV, prepare for interviews, and manage your career effortlessly.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://jobs.rochanegra.com'),
+  title: 'JobZapp - Ultimate Career Search & Intelligence Platform',
+  description: 'Track job applications, generate AI-tailored CVs, prepare with mock interviews, and organize your job search in one powerful dashboard.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://jobzapp.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://jobs.rochanegra.com',
+    url: 'https://jobzapp.com',
     siteName: 'JobZapp',
     title: 'JobZapp | AI Job Tracker & Career OS',
     description: 'High-speed job application tracking with AI precision. Manage interviews, tailor your CV, and master your career.',
@@ -50,6 +50,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: '#4F6BF6',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
 }
 
 export function generateStaticParams() {
@@ -58,13 +62,17 @@ export function generateStaticParams() {
 
 type Props = {
   children: React.ReactNode;
-  params: Promise<{locale: string}>;
+  params: Promise<{locale?: string}>;
 };
 
-export default async function LocaleLayout({children, params}: Props) {
-  const { locale } = await params;
+export default async function RootLayout({
+  children,
+  params
+}: Props) {
+  const resolvedParams = await params;
+  const locale = resolvedParams?.locale || 'en';
 
-  if (!hasLocale(routing.locales, locale)) {
+  if (!routing.locales.includes(locale as any)) {
     notFound();
   }
 
@@ -73,13 +81,7 @@ export default async function LocaleLayout({children, params}: Props) {
   
   return (
     <html lang={locale} data-scroll-behavior="smooth" className="dark">
-      <head>
-        <meta name="theme-color" content="#4F6BF6" />
-        {/* This meta tag prevents auto-zooming on form inputs on mobile */}
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
-        />
+      {/* <head>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -96,14 +98,20 @@ export default async function LocaleLayout({children, params}: Props) {
              })
           }}
         />
-      </head>
-      <body className={`${plusJakarta.variable} ${inter.variable} font-sans antialiased bg-background text-foreground min-h-screen flex flex-col`}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <main className="flex-1">
-            {children}
-          </main>
-          <Toaster position="bottom-right" />
-        </NextIntlClientProvider>
+      </head> */}
+      <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col`}>
+        <ProfileProvider>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <main className="flex-1">
+              {children}
+            </main>
+            <Toaster />
+            <Sonner position="top-center" />
+          </NextIntlClientProvider>
+          <Suspense fallback={null}>
+            <ReferralTracker />
+          </Suspense>
+        </ProfileProvider>
       </body>
     </html>
   )

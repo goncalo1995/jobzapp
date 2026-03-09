@@ -99,7 +99,7 @@ export default function ProfilePage() {
     }
     setParsing(true);
     try {
-      const savedKey = localStorage.getItem("openrouter_key");
+      const savedKey = localStorage.getItem("jobzapp_openrouter_key");
       const res = await fetch('/api/me/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

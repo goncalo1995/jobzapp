@@ -74,7 +74,7 @@ export default function NewCVPage() {
     }
     setTailoring(true);
     try {
-      const savedKey = localStorage.getItem("openrouter_key");
+      const savedKey = localStorage.getItem("jobzapp_openrouter_key");
       
       const res = await fetch('/api/cv/tailor', {
         method: 'POST',

@@ -143,31 +143,45 @@ export default function LandingPage() {
 
       {/* Pricing Teaser */}
       <section className="w-full py-40 bg-background">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col items-center">
-           <header className="mb-16 text-center">
+        <div className="max-w-6xl mx-auto px-6 flex flex-col items-center">
+           <header className="mb-20 text-center">
              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-4">Pricing</div>
              <h2 className="text-4xl md:text-6xl font-heading font-black uppercase tracking-tight mb-6 leading-none">
-               Core is <span className="text-primary italic">Free</span>.
+               Simple, transparent <span className="text-primary italic">pricing</span>.
              </h2>
-             <p className="text-muted-foreground font-medium leading-relaxed max-w-lg mx-auto italic">
-                Get full access to all job tracking, CV storage, and interview preparation features for $0.
+             <p className="text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto italic text-sm">
+                From a generous free tier to absolute professional dominance. Find the plan that fits your ambition.
              </p>
            </header>
            
-           <div className="p-8 bg-secondary/5 border border-border rounded-3xl flex flex-col md:flex-row items-center gap-12 w-full max-w-3xl">
-              <div className="flex-1 space-y-4">
-                 <h4 className="text-xl font-heading font-black uppercase tracking-tight">AI Copilot Beta</h4>
-                 <p className="text-xs text-muted-foreground leading-relaxed italic">
-                   Request early access to our AI features: CV tailoring, mock interviews, and company research.
-                 </p>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+              <div className="p-8 bg-secondary/5 border border-border/50 rounded-3xl flex flex-col items-center text-center">
+                 <h4 className="text-xl font-heading font-black uppercase tracking-tight mb-2">Starter</h4>
+                 <div className="text-3xl font-heading font-black mb-4">$0</div>
+                 <p className="text-xs text-muted-foreground italic mb-6">Good enough for daily tracking. Earn AI credits by sharing.</p>
+                 <div className="text-xs font-bold uppercase tracking-widest text-primary opacity-60">Free Forever</div>
               </div>
-              <Link 
-                href="/pricing"
-                className="px-8 py-4 bg-primary text-primary-foreground text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary/90 transition-all flex items-center gap-3 shadow-lg shadow-primary/20"
-              >
-                View Plans <ArrowRight className="h-4 w-4" />
-              </Link>
+              <div className="p-8 bg-primary/5 border border-primary/30 rounded-3xl flex flex-col items-center text-center relative overflow-hidden transform md:-translate-y-4 shadow-[0_20px_40px_rgba(0,69,255,0.1)]">
+                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
+                 <h4 className="text-xl font-heading font-black uppercase tracking-tight mb-2 text-primary">Accelerator</h4>
+                 <div className="text-3xl font-heading font-black mb-4 text-primary">$15<span className="text-sm text-muted-foreground font-mono">/mo</span></div>
+                 <p className="text-xs text-muted-foreground italic mb-6">The sweet spot. AI Copilot, unlimited storage, and advanced insights.</p>
+                 <div className="text-xs font-bold uppercase tracking-widest text-primary">Most Popular</div>
+              </div>
+              <div className="p-8 bg-secondary/5 border border-border/50 rounded-3xl flex flex-col items-center text-center">
+                 <h4 className="text-xl font-heading font-black uppercase tracking-tight mb-2">Elite</h4>
+                 <div className="text-3xl font-heading font-black mb-4">$49<span className="text-sm text-muted-foreground font-mono">/mo</span></div>
+                 <p className="text-xs text-muted-foreground italic mb-6">Ultimate edge. Premium models, Priority support, 1-on-1 coaching.</p>
+                 <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground bg-secondary px-3 py-1 rounded-full">Waitlist</div>
+              </div>
            </div>
+
+           <Link 
+             href="/pricing"
+             className="px-10 py-5 bg-background border border-border text-foreground text-sm font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-secondary/20 transition-all flex items-center gap-3"
+           >
+             Compare All Plans <ArrowRight className="h-4 w-4" />
+           </Link>
         </div>
       </section>
 

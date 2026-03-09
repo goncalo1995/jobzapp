@@ -1,4 +1,4 @@
-# jobzapp.com
+# jobs.rochanegra.com
 
 Brutal honesty for job seekers. An AI-powered skepticism engine that teardowns CVs and startup ideas using structured mental models (Fermi estimation, Pre-mortems, Inversion).
 

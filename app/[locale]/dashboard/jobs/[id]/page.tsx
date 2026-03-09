@@ -153,7 +153,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   return (
     <div className="max-w-5xl mx-auto space-y-8 pb-20">
       {/* Premium Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-border">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div className="flex items-start gap-5">
           <div className="h-16 w-16 bg-secondary rounded-2xl flex items-center justify-center border border-border shadow-sm shrink-0">
              {job.company?.website ? (

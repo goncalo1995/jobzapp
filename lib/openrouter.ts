@@ -7,6 +7,8 @@ export interface AIServiceMetadata {
   userId?: string | null;
   roastId?: string;
   customApiKey?: string;
+  temperature?: number;
+  max_tokens?: number;
 }
 
 export async function callOpenRouter(
@@ -38,6 +40,14 @@ export async function callOpenRouter(
     body.response_format = { type: "json_object" };
   }
 
+  if (metadata?.temperature) {
+    body.temperature = metadata.temperature;
+  }
+
+  if (metadata?.max_tokens) {
+    body.max_tokens = metadata.max_tokens;
+  }
+
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -49,7 +59,10 @@ export async function callOpenRouter(
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`OpenRouter error: ${errText}`);
+    console.error('[OpenRouter] Error:', errText);
+    const message = metadata?.customApiKey && response.status === 401 ? "Please check your API key and try again." : "Could not process your request. Please try again later.";
+    throw new Error(message);
+    // throw new Error(`OpenRouter error: ${errText}`);
   }
 
   const data = await response.json();

@@ -46,7 +46,7 @@
           "description": "Automated CV tailoring and interview question generation based on specific job descriptions. (Beta)"
         },
         "calendar": {
-          "title": "Bring Your Own Key (Beta)",
+          "title": "Bring Your Own Key",
           "description": "Use your own OpenRouter key to power the AI Copilot. Test all AI features securely and directly from your browser."
         }
       }

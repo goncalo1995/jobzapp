@@ -1,5 +1,5 @@
 // In production, change this to your actual domain: ['https://winsummit.app']
-const allowedOrigins = ['https://jobzapp.ai', 'http://localhost:8081']; //FIX Prod
+const allowedOrigins = ['https://jobs.rochanegra.com', 'http://localhost:8081']; //FIX Prod
 
 export function getCorsHeaders(requestOrigin: string | null) {
   const isAllowed = requestOrigin && allowedOrigins.includes(requestOrigin);

@@ -3,8 +3,9 @@
 import { 
   Calendar, FileText, DollarSign, MapPin, CheckCircle2,
   MessageSquare, Clock, ArrowUpRight, ExternalLink, Mail, 
-  Linkedin, Pencil
+  Linkedin, Pencil, Sparkles
 } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -309,6 +310,11 @@ export function InterviewsTab({
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0 md:self-start">
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 border-primary/20 text-primary hover:bg-primary/10" asChild>
+                <Link href={`/dashboard/prep?interviewId=${interview.id}`}>
+                  <Sparkles className="h-3.5 w-3.5" /> Prepare with AI
+                </Link>
+              </Button>
               <AddInterviewModal 
                 applicationId={applicationId} 
                 companyId={companyId || undefined} 

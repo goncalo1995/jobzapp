@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Check, Sparkles, ArrowRight, Zap, Target, BookOpen, ShieldCheck } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import { WaitlistButton } from '@/components/waitlist-button';
 
 type PricingParams = Promise<{ locale: string }>;
 
@@ -29,25 +30,26 @@ export default async function PricingPage() {
           </p>
         </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
-          {/* Free Tier */}
-          <div className="relative group p-10 bg-secondary/5 border border-border rounded-[32px] flex flex-col justify-between hover:border-primary/50 transition-all duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+          {/* Starter Tier */}
+          <div className="relative group p-8 lg:p-10 bg-secondary/5 border border-border rounded-[32px] flex flex-col justify-between hover:border-primary/50 transition-all duration-500">
             <div>
               <div className="flex items-center justify-between mb-8">
-                <span className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground">{t('free')}</span>
+                <span className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground">Starter</span>
                 <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center">
                   <Target className="h-6 w-6 text-primary" />
                 </div>
               </div>
-              <div className="text-4xl font-heading font-black mb-10">$0<span className="text-lg text-muted-foreground font-mono">/mo</span></div>
+              <div className="text-4xl lg:text-5xl font-heading font-black mb-4">$0<span className="text-lg text-muted-foreground font-mono">/mo</span></div>
+              <p className="text-xs text-muted-foreground italic mb-8 h-8">Good enough for daily tracking. Earn AI credits by sharing.</p>
               
               <div className="space-y-4 mb-12">
-                <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 opacity-50">{t('coreFeatures')}</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 opacity-50">Core Features</div>
                 {[
-                  t('features.unlimitedJobs'),
-                  t('features.cvVault'),
-                  t('features.trackInterviews'),
-                  t('features.dashboard')
+                  "Unlimited Job Tracking",
+                  "Basic CV Storage",
+                  "Interview Stage Logs",
+                  "Standard Dashboard"
                 ].map((feature, i) => (
                   <div key={i} className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary shrink-0" />
@@ -61,49 +63,82 @@ export default async function PricingPage() {
               href="/dashboard"
               className="w-full py-5 bg-foreground text-background text-center text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-foreground/90 transition-all"
             >
-              {t('ctaFree')}
+              Start Free
             </Link>
           </div>
 
-          {/* AI Beta Tier */}
-          <div className="relative group p-10 bg-primary/5 border-2 border-primary/20 rounded-[32px] flex flex-col justify-between overflow-hidden">
+          {/* Accelerator Tier (Most Popular) */}
+          <div className="relative group p-8 lg:p-10 bg-primary/5 border-2 border-primary/30 rounded-[32px] flex flex-col justify-between overflow-hidden transform md:-translate-y-4 shadow-[0_20px_40px_rgba(0,69,255,0.1)]">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
             <div className="absolute top-0 right-0 p-4">
-               <div className="bg-primary text-primary-foreground text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Coming Soon</div>
+               <div className="bg-primary text-primary-foreground text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Most Popular</div>
             </div>
             
             <div>
               <div className="flex items-center justify-between mb-8">
-                <span className="text-sm font-black uppercase tracking-[0.2em] text-primary">{t('aiBeta')}</span>
+                <span className="text-sm font-black uppercase tracking-[0.2em] text-primary">Accelerator</span>
                 <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse">
-                  <Sparkles className="h-6 w-6 text-primary" />
+                  <Zap className="h-6 w-6 text-primary" />
                 </div>
               </div>
-              <div className="text-4xl font-heading font-black mb-10">BETA<span className="text-lg text-muted-foreground font-mono">/invitation</span></div>
+              <div className="text-4xl lg:text-5xl font-heading font-black mb-4 text-primary">$15<span className="text-lg text-muted-foreground font-mono">/mo</span></div>
+              <p className="text-xs text-muted-foreground italic mb-8 h-8">The sweet spot. AI Copilot, unlimited storage, and advanced insights.</p>
               
               <div className="space-y-4 mb-12">
-                <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 opacity-50">{t('aiFeatures')}</div>
+                <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 opacity-50">Everything in Starter, plus:</div>
                 {[
-                  t('features.cvTailoring'),
-                  t('features.mockInterviews'),
-                  t('features.smartResearch')
+                  "AI CV Tailoring",
+                  "AI Mock Interviews",
+                  "Smart Company Research",
+                  "Advanced Analytics"
                 ].map((feature, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <Zap className="h-5 w-5 text-primary shrink-0" />
+                    <Sparkles className="h-5 w-5 text-primary shrink-0" />
                     <span className="text-sm font-medium leading-tight">{feature}</span>
                   </div>
                 ))}
               </div>
-              
-              <p className="text-[11px] text-muted-foreground leading-relaxed mb-8 italic">
-                {t('betaDescription')}
-              </p>
             </div>
             
             <button 
               className="w-full py-5 bg-primary text-primary-foreground text-center text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary/90 transition-all shadow-[0_10px_30px_rgba(0,69,255,0.3)] flex items-center justify-center gap-2 group"
             >
-              {t('ctaBeta')} <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              Upgrade Now <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </button>
+          </div>
+
+          {/* Elite Tier (Waitlist) */}
+          <div className="relative group p-8 lg:p-10 bg-secondary/5 border border-border rounded-[32px] flex flex-col justify-between hover:border-primary/50 transition-all duration-500">
+            <div className="absolute top-0 right-0 p-4">
+               <div className="bg-secondary text-muted-foreground text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full">Waitlist</div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-8">
+                <span className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground">Elite</span>
+                <div className="h-12 w-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+                  <ShieldCheck className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+              <div className="text-4xl lg:text-5xl font-heading font-black mb-4">$49<span className="text-lg text-muted-foreground font-mono">/mo</span></div>
+              <p className="text-xs text-muted-foreground italic mb-8 h-8">Ultimate edge. Premium models, Priority support, 1-on-1 coaching.</p>
+              
+              <div className="space-y-4 mb-12">
+                <div className="text-[10px] font-black uppercase tracking-widest text-primary mb-2 opacity-50">Everything in Accelerator, plus:</div>
+                {[
+                  "1-on-1 Strategy Review",
+                  "Unlimited Premium Models",
+                  "Priority Email Support",
+                  "Early Feature Access"
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Check className="h-5 w-5 text-primary shrink-0 opacity-50" />
+                    <span className="text-sm font-medium leading-tight opacity-70">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <WaitlistButton />
           </div>
         </div>
 

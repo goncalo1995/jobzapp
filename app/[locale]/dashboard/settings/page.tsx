@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Key, ExternalLink } from "lucide-react";
+import { Sparkles, Key, ExternalLink, Book, BookOpen, CreditCard } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -36,9 +36,19 @@ function SettingsContent() {
   const errorParam = searchParams.get("error");
   
   const [openRouterKey, setOpenRouterKey] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const savedKey = localStorage.getItem("openrouter_key");
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
+    };
+    fetchUser();
+    
+    const savedKey = localStorage.getItem("jobzapp_openrouter_key");
     if (savedKey) {
       setOpenRouterKey(savedKey);
     }
@@ -53,17 +63,17 @@ function SettingsContent() {
 
   const handleSaveKey = () => {
     if (openRouterKey.trim() === "") {
-      localStorage.removeItem("openrouter_key");
+      localStorage.removeItem("jobzapp_openrouter_key");
       toast.success(t("byok.savedText"));
     } else {
-      localStorage.setItem("openrouter_key", openRouterKey.trim());
+      localStorage.setItem("jobzapp_openrouter_key", openRouterKey.trim());
       toast.success(t("byok.savedText"));
     }
   };
 
   const handleRemoveKey = () => {
     setOpenRouterKey("");
-    localStorage.removeItem("openrouter_key");
+    localStorage.removeItem("jobzapp_openrouter_key");
     toast.success(t("byok.savedText"));
   };
 
@@ -119,8 +129,9 @@ function SettingsContent() {
             
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Link href={`/api/checkout?locale=${locale}&products=${process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_TOPUP_50 || 'd706db71-02ce-4638-81ef-8b7e917aabf4'}`} className="flex-1">
-                <Button className="w-full" variant="outline">
+                <Button className="w-full" variant="secondary">
                   {t("aiQuotas.buyCredits")}
+                  <CreditCard className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
               <Link href={`/api/portal?locale=${locale}`} className="flex-1">
@@ -129,8 +140,45 @@ function SettingsContent() {
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
+              <Link href="/dashboard/settings/history" className="flex-1">
+                <Button className="w-full" variant="secondary">
+                  Credit History
+                  <BookOpen className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
             </div>
           </CardContent>
+          <CardFooter className="flex flex-col items-start border-t bg-muted/50 p-4 gap-4">
+            <div className="w-full space-y-2">
+              <Label htmlFor="share-link" className="font-semibold flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Earn Free Credits
+              </Label>
+              <p className="text-xs text-muted-foreground mb-2">
+                Share this link with friends. When they visit, you both earn <span className="text-primary font-bold">5 AI Credits</span>.
+              </p>
+              <div className="flex gap-2 w-full">
+                <Input
+                  id="share-link"
+                  readOnly
+                  value={userId ? `${process.env.NEXT_PUBLIC_APP_URL}?ref=${userId}` : 'Loading...'} 
+                  className="bg-background font-mono text-xs flex-1"
+                />
+                <Button 
+                  onClick={() => {
+                    if (userId) {
+                      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}?ref=${userId}`);
+                      toast.success("Link copied to clipboard!");
+                    }
+                  }}
+                  variant="secondary"
+                  disabled={!userId}
+                >
+                  Copy
+                </Button>
+              </div>
+            </div>
+          </CardFooter>
         </Card>
 
         {/* BYOK Card */}

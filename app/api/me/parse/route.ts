@@ -67,10 +67,12 @@ export async function POST(request: Request) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
       
-      await supabaseAdmin.rpc('increment_ai_credits' as any, {
-        user_id: user.id,
-        amount: expectedCost
-      });
+      if (!isByok) {
+        await supabaseAdmin.rpc('increment_ai_credits' as any, {
+          user_id: user.id,
+          amount: expectedCost
+        });
+      }
       
       throw aiError;
     }

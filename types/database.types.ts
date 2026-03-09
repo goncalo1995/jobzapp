@@ -326,6 +326,7 @@ export type Database = {
       }
       interviews: {
         Row: {
+          ai_prep_data: Json[] | null
           created_at: string | null
           duration: number | null
           feedback: string | null
@@ -348,6 +349,7 @@ export type Database = {
           your_questions: string[] | null
         }
         Insert: {
+          ai_prep_data?: Json[] | null
           created_at?: string | null
           duration?: number | null
           feedback?: string | null
@@ -370,6 +372,7 @@ export type Database = {
           your_questions?: string[] | null
         }
         Update: {
+          ai_prep_data?: Json[] | null
           created_at?: string | null
           duration?: number | null
           feedback?: string | null
@@ -632,6 +635,30 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          created_at: string | null
+          id: string
+          referred_ip_hash: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referred_ip_hash: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referred_ip_hash?: string
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           ai_credits: number
@@ -679,6 +706,30 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          tier: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          tier?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          tier?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -695,6 +746,14 @@ export type Database = {
       increment_ai_credits: {
         Args: { amount: number; user_id: string }
         Returns: undefined
+      }
+      process_referral: {
+        Args: {
+          p_ip_hash: string
+          p_referrer_id: string
+          p_reward_amount: number
+        }
+        Returns: Json
       }
     }
     Enums: {

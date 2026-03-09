@@ -18,7 +18,8 @@ import {
   Settings,
   Sparkles,
   Key,
-  Loader2
+  Loader2,
+  BarChart2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +31,8 @@ const NAV_ITEMS = [
   { href: '/dashboard/jobs', label: 'Applications', icon: Briefcase },
   { href: '/dashboard/calendar', label: 'Calendar', icon: CalendarIcon },
   { href: '/dashboard/cvs', label: 'Resumes', icon: FileText },
+  { href: '/dashboard/prep', label: 'Interview Prep', icon: Sparkles },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart2 },
   { href: '/dashboard/activity', label: 'Activity', icon: Activity },
 ];
 
@@ -47,7 +50,7 @@ export function Sidebar() {
 
   useEffect(() => {
     // Check for BYOK locally
-    setHasByok(!!localStorage.getItem("openrouter_key"));
+    setHasByok(!!localStorage.getItem("jobzapp_openrouter_key"));
   }, []);
 
   async function handleSignOut() {

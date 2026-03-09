@@ -236,7 +236,7 @@ export function JobApplicationForm({ initialData, editMode = false }: JobApplica
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-foreground uppercase tracking-wider text-[10px]">Job Description / Notes</label>
+            <label className="text-sm font-bold text-foreground uppercase tracking-wider text-[10px]">Job Description</label>
             <Textarea 
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
@@ -246,7 +246,7 @@ export function JobApplicationForm({ initialData, editMode = false }: JobApplica
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-foreground uppercase tracking-wider text-[10px]">Job Description / Notes</label>
+            <label className="text-sm font-bold text-foreground uppercase tracking-wider text-[10px]">Notes</label>
             <Textarea 
               value={formData.notes}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
