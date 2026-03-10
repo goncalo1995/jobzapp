@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { fetchUserTier } from '@/lib/user-limits';
 
 interface Profile {
   id: string;
@@ -13,6 +14,8 @@ interface Profile {
 interface ProfileContextType {
   profile: Profile | null;
   credits: number;
+  tier: 'free' | 'accelerator' | 'elite';
+  current_period_end: string | null;
   loading: boolean;
   user: User | null;
 }
@@ -21,6 +24,8 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [tier, setTier] = useState<'free' | 'accelerator' | 'elite'>('free');
+  const [currentPeriodEnd, setCurrentPeriodEnd] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -48,6 +53,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         setProfile(data as Profile);
       }
+      
+      // Fetch Tier
+      try {
+         const tInfo = await fetchUserTier();
+         setTier(tInfo.tier);
+         setCurrentPeriodEnd(tInfo.current_period_end);
+      } catch (e) {
+         console.error(e);
+      }
+
       setLoading(false);
 
       // Subscribe to real-time changes
@@ -78,6 +93,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
         setProfile(null);
+        setTier('free');
+        setCurrentPeriodEnd(null);
       }
     });
 
@@ -88,7 +105,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [supabase]);
 
   return (
-    <ProfileContext.Provider value={{ profile, credits: profile?.ai_credits || 0, loading, user }}>
+    <ProfileContext.Provider value={{ profile, credits: profile?.ai_credits || 0, tier, current_period_end: currentPeriodEnd, loading, user }}>
       {children}
     </ProfileContext.Provider>
   );

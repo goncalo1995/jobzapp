@@ -13,7 +13,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useSearchParams, useParams, useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { X, AlertTriangle } from "lucide-react";
+import { X, AlertTriangle, ShieldCheck, Zap } from "lucide-react";
+import { fetchUserTier } from "@/lib/user-limits";
 
 export default function SettingsPage() {
   return (
@@ -38,24 +39,35 @@ function SettingsContent() {
   const [openRouterKey, setOpenRouterKey] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [tierInfo, setTierInfo] = useState<{ tier: "free" | "accelerator" | "elite", current_period_end: string | null }>({ tier: "free", current_period_end: null });
+  const [loadingTier, setLoadingTier] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUserAndTier = async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
       }
-    };
-    fetchUser();
-    
-    const savedKey = localStorage.getItem("jobzapp_openrouter_key");
-    if (savedKey) {
-      setOpenRouterKey(savedKey);
-    }
-  }, []);
+      
+      const info = await fetchUserTier();
+      setTierInfo(info);
+      setLoadingTier(false);
 
+      // If free tier, force remove any saved API keys to prevent bypass
+      if (info.tier === "free") {
+        localStorage.removeItem("jobzapp_openrouter_key");
+        setOpenRouterKey("");
+      } else {
+        const savedKey = localStorage.getItem("jobzapp_openrouter_key");
+        if (savedKey) {
+          setOpenRouterKey(savedKey);
+        }
+      }
+    };
+    fetchUserAndTier();
+  }, []);
 
   useEffect(() => {
     if (errorParam === "no_polar_customer") {
@@ -130,6 +142,69 @@ function SettingsContent() {
       </div>
 
       <div className="grid gap-6">
+        {/* Active Plan Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-primary" />
+              Active Plan
+            </CardTitle>
+            <CardDescription>Manage your current subscription and feature access.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className={`p-4 border rounded-lg text-primary-foreground ${tierInfo.tier === 'accelerator' ? 'bg-primary' : 'bg-secondary text-secondary-foreground'}`}>
+              <div className="space-y-1 mb-4 flex items-center justify-between">
+                <p className="font-medium text-lg flex items-center gap-2">
+                  {tierInfo.tier === 'accelerator' ? <Zap className="h-5 w-5" /> : <ShieldCheck className="h-5 w-5" />}
+                  Current Tier
+                </p>
+              </div>
+              <div>
+                {loadingTier ? (
+                  <div className="h-6 w-24 bg-primary-foreground/20 animate-pulse rounded"></div>
+                ) : (
+                  <div>
+                    <Badge variant="outline" className={`text-base px-3 py-1 uppercase tracking-widest ${tierInfo.tier === 'accelerator' ? 'border-primary-foreground text-primary-foreground/90 bg-primary-foreground/10' : ''}`}>
+                      {tierInfo.tier}
+                    </Badge>
+                    {tierInfo.tier === 'accelerator' && tierInfo.current_period_end && (
+                      <p className="text-sm mt-2 font-medium opacity-90">
+                        Pass Expires: {new Date(tierInfo.current_period_end).toLocaleDateString()}
+                      </p>
+                    )}
+                    {tierInfo.tier === 'free' && (
+                       <p className="text-sm mt-2 text-muted-foreground">
+                         Starter plan covers basic tracking. Upgrade for AI tools and unlimited tracking.
+                       </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex flex-col lg:flex-row gap-3 pt-4 border-t border-border">
+              <Link href={`/api/checkout?locale=${locale}&products=${process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_ACCELERATOR_1_MONTH || ''}`} className="flex-1">
+                <Button className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white border-0 shadow-[0_0_15px_rgba(0,69,255,0.3)]">
+                  {tierInfo.tier === 'accelerator' ? "Extend Pass (1 Month)" : "Upgrade to Pro (1 Month)"}
+                  <Zap className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Link href={`/api/checkout?locale=${locale}&products=${process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_ACCELERATOR_3_MONTHS || ''}`} className="flex-1">
+                <Button className="w-full" variant="outline" style={{ borderColor: 'hsl(var(--primary))', color: 'hsl(var(--primary))' }}>
+                  {tierInfo.tier === 'accelerator' ? "Extend Pass (3 Months)" : "Upgrade to Pro (3 Months)"}
+                  <Sparkles className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+              <Link href={`/api/portal?locale=${locale}`} className="flex-1">
+                <Button className="w-full" variant="secondary">
+                  {t("aiQuotas.manageBilling")}
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* AI Credits Card */}
         <Card>
           <CardHeader>
@@ -140,11 +215,11 @@ function SettingsContent() {
             <CardDescription>{t("aiQuotas.description")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg bg-card">
-              <div className="space-y-1">
+            <div className="p-4 border rounded-lg bg-card">
+              <div className="space-y-1 mb-4">
                 <p className="font-medium text-lg">Current Balance</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div>
                 {loadingCredits ? (
                   <div className="h-6 w-16 bg-muted animate-pulse rounded"></div>
                 ) : (
@@ -155,17 +230,11 @@ function SettingsContent() {
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4 border-t border-border">
               <Link href={`/api/checkout?locale=${locale}&products=${process.env.NEXT_PUBLIC_POLAR_PRODUCT_ID_TOPUP_50 || 'd706db71-02ce-4638-81ef-8b7e917aabf4'}`} className="flex-1">
                 <Button className="w-full" variant="secondary">
                   {t("aiQuotas.buyCredits")}
                   <CreditCard className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-              <Link href={`/api/portal?locale=${locale}`} className="flex-1">
-                <Button className="w-full" variant="secondary">
-                  {t("aiQuotas.manageBilling")}
-                  <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
               <Link href="/dashboard/settings/history" className="flex-1">
@@ -189,13 +258,13 @@ function SettingsContent() {
                 <Input
                   id="share-link"
                   readOnly
-                  value={userId ? `${process.env.NEXT_PUBLIC_APP_URL}?ref=${userId}` : 'Loading...'} 
+                  value={userId ? `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?ref=${userId}` : 'Loading...'} 
                   className="bg-background font-mono text-xs flex-1"
                 />
                 <Button 
                   onClick={() => {
                     if (userId) {
-                      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL}?ref=${userId}`);
+                      navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}?ref=${userId}`);
                       toast.success("Link copied to clipboard!");
                     }
                   }}
@@ -210,11 +279,16 @@ function SettingsContent() {
         </Card>
 
         {/* BYOK Card */}
-        <Card>
+        <Card className={tierInfo.tier === "free" ? "opacity-60 cursor-not-allowed grayscale" : ""}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Key className="w-5 h-5" />
               {t("byok.title")}
+              {tierInfo.tier === "free" && (
+                <Badge variant="secondary" className="ml-2 uppercase text-[10px] tracking-widest font-black">
+                  Accelerator Only
+                </Badge>
+              )}
             </CardTitle>
             <CardDescription>{t("byok.description")}</CardDescription>
           </CardHeader>
@@ -224,17 +298,18 @@ function SettingsContent() {
               <Input
                 id="openrouter-key"
                 type="password"
-                placeholder={t("byok.keyPlaceholder")}
+                placeholder={tierInfo.tier === "free" ? "Upgrade to Accelerator to use custom keys" : t("byok.keyPlaceholder")}
                 value={openRouterKey}
                 onChange={(e) => setOpenRouterKey(e.target.value)}
+                disabled={tierInfo.tier === "free"}
               />
             </div>
           </CardContent>
           <CardFooter className="flex justify-between border-t bg-muted/50 p-4">
-            <Button variant="ghost" onClick={handleRemoveKey} disabled={!openRouterKey}>
+            <Button variant="ghost" onClick={handleRemoveKey} disabled={!openRouterKey || tierInfo.tier === "free"}>
               {t("byok.removeKey")}
             </Button>
-            <Button onClick={handleSaveKey}>
+            <Button onClick={handleSaveKey} disabled={tierInfo.tier === "free"}>
               {t("byok.saveKey")}
             </Button>
           </CardFooter>
@@ -259,7 +334,7 @@ function SettingsContent() {
                </p>
              </div>
           </CardContent>
-          <CardFooter className="flex justify-end border-t p-4 rounded-b-xl border-destructive/20">
+          <CardFooter className="flex justify-end border-t rounded-b-xl border-destructive/20">
             <Button 
               variant="destructive" 
               onClick={handleDeleteAccount}

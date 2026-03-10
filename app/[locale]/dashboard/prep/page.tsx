@@ -498,7 +498,7 @@ function PrepForm() {
                       <SelectItem key={prep.id} value={prep.id}>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-[10px] px-1 py-0 capitalize">{prep.config?.type || 'Mixed'}</Badge>
-                          <span>{new Date(prep.created_at).toLocaleDateString()} at {new Date(prep.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                          <span>{new Date(prep.created_at).toLocaleDateString('en-US')} at {new Date(prep.created_at).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                       </SelectItem>
                     ))}

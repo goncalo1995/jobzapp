@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS public.waitlist (
 ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
 
 -- Allow insert from anywhere (public endpoint)
+DROP POLICY IF EXISTS "Anyone can join waitlist" ON public.waitlist;
 CREATE POLICY "Anyone can join waitlist" ON public.waitlist
 FOR INSERT WITH CHECK (true);
 
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS public.referrals (
 ALTER TABLE public.referrals ENABLE ROW LEVEL SECURITY;
 
 -- Users can see their own successful referrals
+DROP POLICY IF EXISTS "Users can view their own referrals" ON public.referrals;
 CREATE POLICY "Users can view their own referrals" ON public.referrals
 FOR SELECT USING (auth.uid() = referrer_id);
 

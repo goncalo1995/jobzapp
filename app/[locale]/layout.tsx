@@ -10,6 +10,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner';
 import { Toaster } from '@/components/ui/toaster';
 import { ProfileProvider } from "@/components/providers/profile-provider"
 import { ReferralTracker } from '@/components/referral-tracker';
+import QueryProvider from '@/components/providers/query-provider';
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -100,18 +101,20 @@ export default async function RootLayout({
         />
       </head> */}
       <body className={`${inter.variable} ${outfit.variable} antialiased min-h-screen flex flex-col`}>
-        <ProfileProvider>
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <main className="flex-1">
-              {children}
-            </main>
-            <Toaster />
-            <Sonner position="top-center" />
-          </NextIntlClientProvider>
-          <Suspense fallback={null}>
-            <ReferralTracker />
-          </Suspense>
-        </ProfileProvider>
+        <QueryProvider>
+          <ProfileProvider>
+            <NextIntlClientProvider locale={locale} messages={messages}>
+              <main className="flex-1">
+                {children}
+              </main>
+              <Toaster />
+              <Sonner position="top-center" />
+            </NextIntlClientProvider>
+            <Suspense fallback={null}>
+              <ReferralTracker />
+            </Suspense>
+          </ProfileProvider>
+        </QueryProvider>
       </body>
     </html>
   )

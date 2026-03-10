@@ -47,11 +47,12 @@ export function WaitlistButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <button 
-          className="w-full py-5 bg-secondary text-muted-foreground text-center text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-secondary/80 transition-all flex items-center justify-center gap-2 group"
+        <Button 
+          variant="outline"
+          className="w-full py-5 bg-secondary text-muted-foreground text-center text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-secondary/30 hover:text-muted-foreground/80 transition-all flex items-center justify-center gap-2 group"
         >
           Join Waitlist <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md border-border bg-card">
         <DialogHeader>

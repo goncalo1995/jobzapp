@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS public.api_usage (
 
 ALTER TABLE public.api_usage ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own API usage" ON public.api_usage;
 CREATE POLICY "Users can view their own API usage"
 ON public.api_usage FOR SELECT
 USING (auth.uid() = user_id);
@@ -49,6 +50,7 @@ CREATE TABLE IF NOT EXISTS public.processed_checkouts (
 ALTER TABLE public.processed_checkouts ENABLE ROW LEVEL SECURITY;
 
 -- Allow read for users on their own processed checkouts (optional)
+DROP POLICY IF EXISTS "Users can view their own checkouts" ON public.processed_checkouts;
 CREATE POLICY "Users can view their own checkouts"
 ON public.processed_checkouts FOR SELECT
 USING (auth.uid() = user_id);
@@ -139,40 +141,104 @@ CREATE TABLE IF NOT EXISTS public.ai_credit_logs (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   amount INTEGER NOT NULL,
   action_type VARCHAR(50) NOT NULL,
+  action TEXT,
+  metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 ALTER TABLE public.ai_credit_logs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view their own credit logs" ON public.ai_credit_logs;
 CREATE POLICY "Users can view their own credit logs"
 ON public.ai_credit_logs FOR SELECT
 USING (auth.uid() = user_id);
 
-CREATE OR REPLACE FUNCTION public.log_ai_credit_changes()
-RETURNS TRIGGER
+GRANT SELECT ON public.ai_credit_logs TO authenticated;
+
+-- Recreate deduct_ai_credits to take action and metadata manually
+DROP FUNCTION IF EXISTS public.deduct_ai_credits(UUID, INTEGER);
+
+CREATE OR REPLACE FUNCTION public.deduct_ai_credits(
+  target_user_id UUID, 
+  amount INTEGER, 
+  p_action TEXT DEFAULT 'deduct', 
+  p_metadata JSONB DEFAULT '{}'::jsonb
+)
+RETURNS boolean 
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  IF OLD.ai_credits <> NEW.ai_credits THEN
-    INSERT INTO public.ai_credit_logs (user_id, amount, action_type)
-    VALUES (
-      NEW.id,
-      NEW.ai_credits - OLD.ai_credits,
-      CASE WHEN NEW.ai_credits > OLD.ai_credits THEN 'increment' ELSE 'deduct' END
-    );
+  -- Validate amount
+  IF amount <= 0 THEN
+    RAISE EXCEPTION 'Amount must be positive';
   END IF;
-  RETURN NEW;
+
+  -- Verify ownership
+  IF auth.uid() IS NOT NULL AND auth.uid() <> target_user_id THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
+  UPDATE public.user_profiles
+  SET ai_credits = ai_credits - amount
+  WHERE id = target_user_id AND ai_credits >= amount;
+
+  IF FOUND THEN
+    INSERT INTO public.ai_credit_logs (user_id, amount, action_type, action, metadata)
+    VALUES (target_user_id, -amount, 'deduct', p_action, p_metadata);
+  END IF;
+
+  RETURN FOUND;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS ai_credits_audit_trigger ON public.user_profiles;
+REVOKE EXECUTE ON FUNCTION public.deduct_ai_credits(UUID, INTEGER, TEXT, JSONB) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.deduct_ai_credits(UUID, INTEGER, TEXT, JSONB) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.deduct_ai_credits(UUID, INTEGER, TEXT, JSONB) TO service_role;
 
-CREATE TRIGGER ai_credits_audit_trigger
-AFTER UPDATE OF ai_credits ON public.user_profiles
-FOR EACH ROW
-EXECUTE FUNCTION public.log_ai_credit_changes();
+-- Modify increment_ai_credits
+DROP FUNCTION IF EXISTS public.increment_ai_credits(UUID, INTEGER);
 
--- Grant permissions to read logs
-GRANT SELECT ON public.ai_credit_logs TO authenticated;
+CREATE OR REPLACE FUNCTION public.increment_ai_credits(
+  target_user_id UUID, 
+  amount INTEGER, 
+  p_action TEXT DEFAULT 'increment', 
+  p_metadata JSONB DEFAULT '{}'::jsonb
+)
+RETURNS void AS $$
+BEGIN
+  UPDATE public.user_profiles
+  SET ai_credits = COALESCE(ai_credits, 0) + amount
+  WHERE id = target_user_id;
+
+  INSERT INTO public.ai_credit_logs (user_id, amount, action_type, action, metadata)
+  VALUES (target_user_id, amount, 'increment', p_action, p_metadata);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+REVOKE EXECUTE ON FUNCTION public.increment_ai_credits(UUID, INTEGER, TEXT, JSONB) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.increment_ai_credits(UUID, INTEGER, TEXT, JSONB) FROM authenticated;
+GRANT EXECUTE ON FUNCTION public.increment_ai_credits(UUID, INTEGER, TEXT, JSONB) TO service_role;
+
+-- Create Secure User Subscriptions Table
+CREATE TABLE IF NOT EXISTS public.user_subscriptions (
+    user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'accelerator', 'elite')),
+    polar_customer_id TEXT,
+    subscription_id TEXT,
+    status TEXT,
+    current_period_end TIMESTAMPTZ,
+    cancel_at_period_end BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.user_subscriptions ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own subscription" ON public.user_subscriptions;
+CREATE POLICY "Users can view own subscription" ON public.user_subscriptions
+    FOR SELECT USING (auth.uid() = user_id);
+
+DROP TRIGGER IF EXISTS update_user_subscriptions_updated_at ON public.user_subscriptions;
+CREATE TRIGGER update_user_subscriptions_updated_at BEFORE UPDATE ON public.user_subscriptions FOR EACH ROW EXECUTE PROCEDURE update_updated_at_column();

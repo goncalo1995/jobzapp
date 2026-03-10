@@ -176,7 +176,7 @@ export default function ActivityTrackerPage() {
                     <div className="space-y-1">
                       <div className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
                         <Clock className="h-3 w-3" />
-                        {new Date(activity.date).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(activity.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                       </div>
                       <h4 className="font-bold text-foreground text-sm uppercase tracking-wide">
                         {activity.title}
@@ -197,7 +197,8 @@ export default function ActivityTrackerPage() {
                             src={`https://img.logo.dev/${activity.meta.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
                             alt={activity.meta.company.name}
                             fill
-                            className="object-contain p-1"
+                            sizes='(max-width: 300px) 10vw, 3vw'
+                            className="object-contain"
                             onError={(e) => {
                               (e.target as any).style.display = 'none';
                             }}

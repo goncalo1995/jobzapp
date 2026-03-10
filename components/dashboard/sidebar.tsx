@@ -14,11 +14,8 @@ import {
   LogOut,
   Menu,
   X,
-  Activity,
-  Settings,
   Sparkles,
   Key,
-  Loader2,
   BarChart2,
   ChevronLeft,
   ChevronRight
@@ -47,7 +44,7 @@ export function Sidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [isOpen, setIsOpen] = useState(false);
-  const { credits: aiCredits, loading: profileLoading } = useProfile();
+  const { credits: aiCredits, tier, loading: profileLoading } = useProfile();
   const [hasByok, setHasByok] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -68,7 +65,7 @@ export function Sidebar() {
   return (
     <aside className={cn(
       "border-border bg-card flex flex-col z-20 shrink-0 transition-all duration-300",
-      isCollapsed ? "md:w-20" : "md:w-64",
+      isCollapsed ? "md:w-20" : "md:w-56",
       "md:border-r md:h-full md:relative",
       isOpen ? "fixed inset-0 h-screen w-full" : "h-14 border-b w-full"
     )}>
@@ -140,15 +137,15 @@ export function Sidebar() {
           {!isCollapsed && (
             <Link href="/dashboard/settings" onClick={() => setIsOpen(false)} className="block group px-2 py-2">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI Tier</span>
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Plan</span>
                 {hasByok ? (
                   <Badge variant="secondary" className="px-2 py-0.5 text-[10px] bg-primary/10 text-primary border-primary/20">
                     <Key className="w-3 h-3 mr-1" /> BYOK
                   </Badge>
-                // ) : aiCredits && aiCredits > 0 ? (
-                //   <Badge variant="default" className="px-2 py-0.5 text-[10px]">
-                //     Premium
-                //   </Badge>
+                ) : tier === 'accelerator' ? (
+                  <Badge variant="default" className="px-2 py-0.5 text-[10px]">
+                    Accelerator
+                  </Badge>
                 ) : (
                   <Badge variant="outline" className="px-2 py-0.5 text-[10px]">
                     Free
@@ -212,10 +209,10 @@ export function Sidebar() {
               "hidden md:flex items-center px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors rounded-lg",
               isCollapsed ? "justify-center" : "gap-3"
             )}
-            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            title={isCollapsed ? "Expand Sidebar" : "Collapse"}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            {!isCollapsed && "Collapse Sidebar"}
+            {!isCollapsed && "Collapse"}
           </button>
         </div>
       </div>

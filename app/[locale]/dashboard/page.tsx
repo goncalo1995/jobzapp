@@ -1,43 +1,30 @@
-// app/[locale]/dashboard/page.tsx
-import { Link, redirect } from '@/i18n/navigation';
+'use client';
+
+import { Link, useRouter } from '@/i18n/navigation';
 import { Briefcase, FileText, CheckCircle, Clock, ArrowRight, Zap, User, Activity } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
-import { routing } from '@/i18n/routing';
+import { useDashboardData } from '@/hooks/queries';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
-export const dynamic = 'force-dynamic';
+export default function DashboardPage() {
+  const router = useRouter();
+  const { data, isLoading, error } = useDashboardData();
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !user.id) {
-    redirect( { href: '/auth/login', locale: routing.defaultLocale });
-    return;
+  useEffect(() => {
+    if (error) {
+      router.replace('/auth/login');
+    }
+  }, [error, router]);
+
+  if (isLoading || !data) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-primary" />
+      </div>
+    );
   }
-  const { data: applications } = await supabase
-    .from('job_applications')
-    .select('*, company:companies(id, name, website)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-  const { data: interviews } = await supabase
-    .from('interviews')
-    .select('*')
-    .order('created_at', { ascending: false });
-  const { data: offers } = await supabase
-    .from('job_offers')
-    .select('*')
-    .order('created_at', { ascending: false });
-  const { data: resumes } = await supabase
-    .from('cvs')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-  const { data: recentActivity } = await supabase
-    .from('interactions')
-    .select('id, type, notes, created_at')
-    .eq('created_by', user.id)
-    .order('created_at', { ascending: false })
-    .limit(3);
+
+  const { applications, interviews, offers, resumes, recentActivity } = data;
 
   const stats = [
     { label: 'Applications', value: applications?.length || 0, icon: Briefcase, color: 'text-primary' },
@@ -104,7 +91,7 @@ export default async function DashboardPage() {
                             alt={app.company.name}
                             width={100}
                             height={100}
-                            className="w-full h-full object-contain p-1"
+                            className="w-full h-full object-contain"
                           />
                         ) : null}
                         <div className="w-full h-full flex items-center justify-center font-bold text-muted-foreground uppercase text-xs" style={{ display: app.company?.website ? 'none' : 'flex' }}>
@@ -119,7 +106,7 @@ export default async function DashboardPage() {
                     <div className="text-right flex flex-col items-end">
                       <p className="text-xs font-medium bg-secondary text-secondary-foreground px-2 py-1 rounded-md">{app.status}</p>
                       <p className="text-[10px] text-muted-foreground mt-1">
-                         {new Date(app.created_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+                         {new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                   </Link>
@@ -161,7 +148,7 @@ export default async function DashboardPage() {
                     <div className="mt-0.5 h-2 w-2 rounded-full bg-primary shrink-0" />
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground font-medium">
-                        {activity.created_at ? new Date(activity.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date'}
+                        {activity.created_at ? new Date(activity.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown Date'}
                       </p>
                       <p className="text-sm font-medium text-foreground">{activity.type}</p>
                       {activity.notes && (

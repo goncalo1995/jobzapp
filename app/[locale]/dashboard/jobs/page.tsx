@@ -1,13 +1,14 @@
 // app/[locale]/dashboard/jobs/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
+import { useJobApplications } from '@/hooks/queries';
 import { Briefcase, Plus, Search, Building2, Calendar, ChevronRight, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import Image from 'next/image';
 
 const STATUS_COLORS: Record<string, string> = {
   Wishlist: 'bg-muted text-muted-foreground border-border',
@@ -20,34 +21,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function JobsTrackingPage() {
-  const [loading, setLoading] = useState(true);
-  const [jobs, setJobs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function fetchJobs() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data } = await supabase
-          .from('job_applications')
-          .select(`*, company:companies(name)`)
-          .eq('user_id', user.id)
-          .order('last_updated', { ascending: false });
-
-        if (data) setJobs(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchJobs();
-  }, [supabase]);
+  const { data: jobs = [], isLoading: loading } = useJobApplications();
 
   const filteredJobs = jobs.filter(job => 
     job.position?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -131,7 +108,15 @@ export default function JobsTrackingPage() {
               <Link key={job.id} href={`/dashboard/jobs/${job.id}`} className="block">
                 <div className="group bg-card border border-border rounded-xl p-5 hover:border-primary/30 transition-all flex flex-col md:flex-row md:items-center gap-4">
                   <div className="h-12 w-12 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                    <Building2 className="h-6 w-6 text-muted-foreground" />
+                    {job.company?.website ? (
+                      <Image 
+                        src={`https://img.logo.dev/${job.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`}
+                        alt={job.company.name}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-contain rounded-md"
+                      />
+                    ) :  <Building2 className="h-6 w-6 text-muted-foreground" />}
                   </div>
                   
                   <div className="flex-1 space-y-1 min-w-0">
@@ -141,7 +126,7 @@ export default function JobsTrackingPage() {
                       </h3>
                       <div className={cn(
                         "px-2 py-0.5 rounded-md text-[10px] font-semibold border",
-                        STATUS_COLORS[job.status] || STATUS_COLORS.Applied
+                        STATUS_COLORS[job.status || ''] || STATUS_COLORS.Applied
                       )}>
                         {job.status}
                       </div>
@@ -151,7 +136,7 @@ export default function JobsTrackingPage() {
                          <Building2 className="h-3 w-3" /> {job.company?.name || job.company_name_denormalized || 'Unknown'}
                       </span>
                       <span className="flex items-center gap-1.5">
-                         <Calendar className="h-3 w-3" /> {job.applied_date ? new Date(job.applied_date).toLocaleDateString() : 'Not applied'}
+                         <Calendar className="h-3 w-3" /> {job.applied_date ? new Date(job.applied_date).toLocaleDateString('en-US') : 'Not applied'}
                       </span>
                     </div>
                   </div>
@@ -201,7 +186,7 @@ export default function JobsTrackingPage() {
                               <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-2 border-t border-border/50">
                                  <span className="flex items-center gap-1">
                                     <Calendar className="h-3 w-3" />
-                                    {job.applied_date ? new Date(job.applied_date).toLocaleDateString() : 'N/A'}
+                                    {job.applied_date ? new Date(job.applied_date).toLocaleDateString('en-US') : 'N/A'}
                                  </span>
                                  <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                               </div>

@@ -65,10 +65,10 @@ export function CVDoc({ data, config }: { data: any; config?: any }) {
           {contact && (
             <View style={styles.contactRow}>
               {contact.email && <Text style={styles.contactItem}>{contact.email}</Text>}
-              {contact.phone && <Text style={styles.contactItem}>| {contact.phone}</Text>}
-              {contact.location && <Text style={styles.contactItem}>| {contact.location}</Text>}
-              {contact.linkedin && <Text style={styles.contactItem}>| {contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
-              {contact.github && <Text style={styles.contactItem}>| {contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
+              {contact.phone && <Text style={styles.contactItem}>|  {contact.phone}</Text>}
+              {contact.location && <Text style={styles.contactItem}>|  {contact.location}</Text>}
+              {contact.linkedin && <Text style={styles.contactItem}>|  {contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
+              {contact.github && <Text style={styles.contactItem}>|  {contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</Text>}
             </View>
           )}
         </View>

@@ -153,8 +153,31 @@ CREATE TABLE IF NOT EXISTS public.interviews (
     follow_up_date TIMESTAMPTZ,
     star_stories JSONB, -- Array of {situation, task, action, result}
     notes TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    ai_prep_data JSONB[] DEFAULT '{}'
 );
+
+-- Comment to document the prep data structure
+COMMENT ON COLUMN public.interviews.ai_prep_data IS 
+'Stores an array of AI-generated interview preparation data with structure:
+[
+  {
+    "id": "uuid",
+    "created_at": "timestamp",
+    "config": {
+      "type": "behavioral|technical|case|mixed",
+      "difficulty": "standard|hardcore",
+      "time": "1hour|1day|1week"
+    },
+    "companyInsights": "string",
+    "roleAnalysis": "string",
+    "customFocus": "string",
+    "trainingPlan": "string",
+    "questions": [...],
+    "keyTopics": ["string"],
+    "estimatedTime": "string"
+  }
+]';
 
 -- 4. Offers & Cover Letters
 DO $$

@@ -1,8 +1,8 @@
 // app/[locale]/dashboard/cvs/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState } from 'react';
+import { useCVs } from '@/hooks/queries';
 import { FileText, Plus, Search, Download, Edit2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,33 +10,9 @@ import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
 
 export default function CVsManagementPage() {
-  const [loading, setLoading] = useState(true);
-  const [cvs, setCvs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const supabase = createClient();
-
-  useEffect(() => {
-    async function fetchCVs() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data } = await supabase
-          .from('cvs')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('updated_at', { ascending: false });
-
-        if (data) setCvs(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCVs();
-  }, [supabase]);
+  const { data: cvs = [], isLoading: loading } = useCVs();
 
   const filteredCvs = cvs.filter(cv => 
     cv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -126,7 +102,7 @@ export default function CVsManagementPage() {
                   </p>
                 </div>
                 <p className="text-[11px] text-muted-foreground/60">
-                  Updated {new Date(cv.updated_at).toLocaleDateString()}
+                  Updated {cv.updated_at ? new Date(cv.updated_at).toLocaleDateString('en-US') : 'Unknown'}
                 </p>
               </div>
 

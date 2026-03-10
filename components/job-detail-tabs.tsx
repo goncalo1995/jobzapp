@@ -39,7 +39,7 @@ export function OverviewTab({ job, cv }: { job: JobApplication & { company?: any
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <InfoCard 
           label="Applied Date" 
-          value={job.applied_date ? new Date(job.applied_date).toLocaleDateString() : 'Not applied'} 
+          value={job.applied_date ? new Date(job.applied_date).toLocaleDateString('en-US') : 'Not applied'} 
           icon={Calendar} 
         />
         <InfoCard 
@@ -157,7 +157,7 @@ export function ContactsTab({
                     {interaction.type}
                   </span>
                   <span className="text-[10px] text-muted-foreground">
-                    {interaction.interaction_date ? new Date(interaction.interaction_date).toLocaleDateString() : ''}
+                    {interaction.interaction_date ? new Date(interaction.interaction_date).toLocaleDateString('en-US') : ''}
                   </span>
                 </div>
                 <p className="text-sm text-foreground/80">{interaction.notes}</p>

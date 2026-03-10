@@ -15,6 +15,8 @@ import { Calendar as CalendarIcon, ArrowRight, Star, Plus, Briefcase, DollarSign
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { ApplicationStatus } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { KEYS } from '@/hooks/queries';
 
 interface StageTransitionModalProps {
   applicationId: string;
@@ -42,6 +44,7 @@ export function StageTransitionModal({
   const [notes, setNotes] = useState('');
 
   const supabase = createClient();
+  const queryClient = useQueryClient();
 
   async function handleTransition() {
     setLoading(true);
@@ -81,6 +84,8 @@ export function StageTransitionModal({
       } else if (targetStatus === 'Offer' && onTransitionedToOffer) {
         onTransitionedToOffer();
       }
+      
+      queryClient.invalidateQueries({ queryKey: [KEYS.JOB_APPLICATIONS] });
 
     } catch (err: any) {
       toast.error(err.message || 'Failed to move stage');

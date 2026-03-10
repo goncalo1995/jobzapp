@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
-  Building2, Save, ArrowLeft, Link as LinkIcon, 
+  Building2, Save, Link as LinkIcon, 
   Briefcase, Globe, CheckCircle2, Zap, FileText 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { Link } from '@/i18n/navigation';
 import { ApplicationStatus } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
+import { KEYS } from '@/hooks/queries';
 
 interface JobApplicationFormProps {
   initialData?: any;
@@ -22,6 +24,7 @@ interface JobApplicationFormProps {
 
 export function JobApplicationForm({ initialData, editMode = false }: JobApplicationFormProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [cvs, setCvs] = useState<any[]>([]);
   
@@ -101,6 +104,7 @@ export function JobApplicationForm({ initialData, editMode = false }: JobApplica
           .eq('id', initialData.id);
         if (jobError) throw jobError;
         toast.success('Application updated!');
+        queryClient.invalidateQueries({ queryKey: [KEYS.JOB_APPLICATIONS] });
         router.push(`/dashboard/jobs/${initialData.id}`);
       } else {
         const { error: jobError } = await supabase
@@ -111,6 +115,7 @@ export function JobApplicationForm({ initialData, editMode = false }: JobApplica
           });
         if (jobError) throw jobError;
         toast.success('Application added!');
+        queryClient.invalidateQueries({ queryKey: [KEYS.JOB_APPLICATIONS] });
         router.push('/dashboard/jobs');
       }
       router.refresh();

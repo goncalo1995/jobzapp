@@ -12,10 +12,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarIcon, Clock, Star, Plus, Users, MapPin, Loader2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { Constants } from '@/types/database.types';
+import { useQueryClient } from '@tanstack/react-query';
+import { KEYS, useInterviewLimit } from '@/hooks/queries';
+import { Sparkles, ShieldCheck, Plus, Loader2, CalendarIcon, Users } from 'lucide-react';
+import Link from 'next/link';
 
 interface AddInterviewModalProps {
   applicationId: string;
@@ -41,6 +44,14 @@ export function AddInterviewModal({
   const setOpen = externalOnOpenChange !== undefined ? externalOnOpenChange : setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [fetchingContacts, setFetchingContacts] = useState(false);
+
+  const { data: limitData, isLoading: checkingLimitRef } = useInterviewLimit();
+  
+  // Only check limit if adding a new one
+  const isLimitReached = !interview && limitData ? !limitData.canAdd : false;
+  const checkingLimit = !interview && checkingLimitRef;
+
+  const queryClient = useQueryClient();
   
   const [type, setType] = useState('Technical');
   const [format, setFormat] = useState('Google Meet');
@@ -84,7 +95,8 @@ export function AddInterviewModal({
       };
       fetchContacts();
     }
-  }, [open, companyId, supabase]);
+
+  }, [open, companyId, supabase, interview]);
 
   const toggleContact = (id: string) => {
     setSelectedContactIds(prev => 
@@ -131,6 +143,7 @@ export function AddInterviewModal({
       if (error) throw error;
 
       toast.success(interview ? 'Interview updated successfully' : 'Interview added successfully');
+      queryClient.invalidateQueries({ queryKey: [KEYS.INTERVIEWS] });
       setOpen(false);
       onSuccess();
       
@@ -164,13 +177,43 @@ export function AddInterviewModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading font-bold">{interview ? 'Edit Interview' : 'Schedule Interview'}</DialogTitle>
-          <DialogDescription>
-            {interview ? 'Update the details for this interview.' : 'Record details for an upcoming or past interview.'}
-          </DialogDescription>
+          {!isLimitReached && (
+            <DialogDescription>
+              {interview ? 'Update the details for this interview.' : 'Record details for an upcoming or past interview.'}
+            </DialogDescription>
+          )}
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="grid grid-cols-2 gap-4">
+        {checkingLimit ? (
+           <div className="py-12 flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
+              <p className="text-sm text-muted-foreground">Checking account limits...</p>
+           </div>
+        ) : isLimitReached && !interview ? (
+           <div className="py-6 space-y-6 text-center">
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                 <ShieldCheck className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-heading font-black">Interview Limit Reached</h3>
+              <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                 You have reached the maximum of {limitData?.limit || 10} active interviews on the Starter plan. 
+                 Upgrade to an Accelerator time-pass for unlimited tracking and AI Copilot.
+              </p>
+              <div className="pt-4">
+                 <Button asChild className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white border-0">
+                    <Link href="/dashboard/settings">
+                       Upgrade to Accelerator <Sparkles className="w-4 h-4 ml-2" />
+                    </Link>
+                 </Button>
+                 <Button variant="ghost" className="w-full mt-2" onClick={() => setOpen(false)}>
+                    Cancel
+                 </Button>
+              </div>
+           </div>
+        ) : (
+          <>
+            <div className="space-y-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Interview Type</Label>
               <Select value={type} onValueChange={setType}>
@@ -284,15 +327,15 @@ export function AddInterviewModal({
             />
           </div>
         </div>
-
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Saving...' : (interview ? 'Update Interview' : 'Add Interview')}
-          </Button>
-        </DialogFooter>
+              <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button onClick={handleSubmit} disabled={loading || checkingLimit || isLimitReached}>
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                {interview ? 'Save Changes' : 'Add Interview'}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

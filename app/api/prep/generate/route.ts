@@ -1,15 +1,21 @@
 // app/api/prep/generate/route.ts
 
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { adminSupabase } from '@/lib/supabase/admin';
 import { callOpenRouter, parseAIJSON } from '@/lib/openrouter';
 import { INTERVIEW_PREP_SYSTEM_PROMPT } from '@/lib/prompts';
 import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit';
+import { calculateCreditCost } from '@/lib/credit-costs';
+import { getUserTier } from '@/lib/tier-limits';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Apply AI rate limiting
+  const rateLimitResponse = await checkRateLimit(request, true);
+  if (rateLimitResponse) return rateLimitResponse;
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -30,12 +36,18 @@ export async function POST(request: Request) {
     const isByok = !!customApiKey;
     const selectedModel = model || 'anthropic/claude-3.5-sonnet';
 
+    // 0. Enforce BYOK Limits
+    if (isByok) {
+       const { tier } = await getUserTier();
+       if (tier === 'free') {
+          return NextResponse.json({ error: 'Bring-Your-Own-Key is only available on the Accelerator plan.' }, { status: 403 });
+       }
+    }
+
     // 1. Check & Deduct Credits
-    let expectedCost = 0;
+    let expectedCost = calculateCreditCost('INTERVIEW_PREP_GENERATE', selectedModel);
 
-    if (!isByok) {
-      expectedCost = selectedModel.includes('claude-3.5-sonnet') ? 10 : 5;
-
+    if (!isByok && expectedCost > 0) {
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('ai_credits')
@@ -49,17 +61,19 @@ export async function POST(request: Request) {
       // Deduct credits
       await adminSupabase.rpc('deduct_ai_credits', {
         target_user_id: user.id,
-        amount: expectedCost
+        amount: expectedCost,
+        p_action: 'interview_prep',
+        p_metadata: { interviewId, model: selectedModel }
       });
     }
 
     // 2. Call AI
+    // TODO check if worth passing profile to interview prep
+    // CANDIDATE PROFILE:
+    // ${JSON.stringify(profile, null, 2)}
     const userPrompt = `
 JOB DESCRIPTION:
 ${jobDescription}
-
-CANDIDATE PROFILE:
-${JSON.stringify(profile, null, 2)}
 
 CONFIGURATION:
 - Preparation Type: ${prepType || 'Mixed'}
@@ -143,8 +157,10 @@ ${customFocus ? `CANDIDATE CUSTOM FOCUS:\n${customFocus}` : ''}
       
       if (!isByok && expectedCost > 0) {
         await adminSupabase.rpc('increment_ai_credits' as any, {
-          user_id: user.id,
-          amount: expectedCost
+          target_user_id: user.id,
+          amount: expectedCost,
+          p_action: 'refund_interview_prep',
+          p_metadata: { aiError: aiError.message }
         });
       }
       

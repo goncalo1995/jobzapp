@@ -25,12 +25,15 @@ import { AddInterviewModal } from '@/components/add-interview-modal';
 import { AddOfferModal } from '@/components/add-offer-modal';
 import type { JobApplication, Interview, Interaction, Contact, JobOffer, CV } from '@/types';
 import Image from "next/image";
+import { useQueryClient } from '@tanstack/react-query';
+import { KEYS } from '@/hooks/queries';
 
 export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const queryClient = useQueryClient();
   
   const [job, setJob] = useState<(JobApplication & { company?: any }) | null>(null);
   const [cv, setCv] = useState<CV | null>(null);
@@ -133,6 +136,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       
       if (error) throw error;
       toast.success('Application deleted');
+      queryClient.invalidateQueries({ queryKey: [KEYS.JOB_APPLICATIONS] });
       router.push('/dashboard/jobs');
     } catch (err: any) {
       toast.error(err.message || 'Failed to delete');
@@ -162,7 +166,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                  alt={job.company.name} 
                  width={64}
                  height={64}
-                 className="object-contain p-1"
+                 className="object-contain rounded-md"
                  onError={(e) => {
                    (e.target as any).style.display = 'none';
                    (e.target as any).nextSibling.style.display = 'flex';

@@ -158,14 +158,14 @@ export default function LandingPage() {
               <div className="p-8 bg-secondary/5 border border-border/50 rounded-3xl flex flex-col items-center text-center">
                  <h4 className="text-xl font-heading font-black uppercase tracking-tight mb-2">Starter</h4>
                  <div className="text-3xl font-heading font-black mb-4">$0</div>
-                 <p className="text-xs text-muted-foreground italic mb-6">Good enough for daily tracking. Earn AI credits by sharing.</p>
+                 <p className="text-xs text-muted-foreground italic mb-6">Good enough for daily tracking. Up to 10 active interviews. AI available via Top-ups.</p>
                  <div className="text-xs font-bold uppercase tracking-widest text-primary opacity-60">Free Forever</div>
               </div>
               <div className="p-8 bg-primary/5 border border-primary/30 rounded-3xl flex flex-col items-center text-center relative overflow-hidden transform md:-translate-y-4 shadow-[0_20px_40px_rgba(0,69,255,0.1)]">
                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary/0 via-primary to-primary/0" />
                  <h4 className="text-xl font-heading font-black uppercase tracking-tight mb-2 text-primary">Accelerator</h4>
-                 <div className="text-3xl font-heading font-black mb-4 text-primary">$15<span className="text-sm text-muted-foreground font-mono">/mo</span></div>
-                 <p className="text-xs text-muted-foreground italic mb-6">The sweet spot. AI Copilot, unlimited storage, and advanced insights.</p>
+                 <div className="text-3xl font-heading font-black mb-4 text-primary">$15<span className="text-sm text-muted-foreground font-mono">/1mo pass</span></div>
+                 <p className="text-xs text-muted-foreground italic mb-6">No subscriptions. Buy time-passes for seamless AI Copilot, unlimited interviews, and BYOK support.</p>
                  <div className="text-xs font-bold uppercase tracking-widest text-primary">Most Popular</div>
               </div>
               <div className="p-8 bg-secondary/5 border border-border/50 rounded-3xl flex flex-col items-center text-center">

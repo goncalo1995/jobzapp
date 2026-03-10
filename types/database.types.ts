@@ -16,24 +16,30 @@ export type Database = {
     Tables: {
       ai_credit_logs: {
         Row: {
+          action: string | null
           action_type: string
           amount: number
           created_at: string | null
           id: string
+          metadata: Json | null
           user_id: string | null
         }
         Insert: {
+          action?: string | null
           action_type: string
           amount: number
           created_at?: string | null
           id?: string
+          metadata?: Json | null
           user_id?: string | null
         }
         Update: {
+          action?: string | null
           action_type?: string
           amount?: number
           created_at?: string | null
           id?: string
+          metadata?: Json | null
           user_id?: string | null
         }
         Relationships: []
@@ -706,6 +712,42 @@ export type Database = {
           },
         ]
       }
+      user_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string | null
+          current_period_end: string | null
+          polar_customer_id: string | null
+          status: string | null
+          subscription_id: string | null
+          tier: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          polar_customer_id?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          tier?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string | null
+          current_period_end?: string | null
+          polar_customer_id?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          tier?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           created_at: string | null
@@ -736,7 +778,12 @@ export type Database = {
     }
     Functions: {
       deduct_ai_credits: {
-        Args: { amount: number; target_user_id: string }
+        Args: {
+          amount: number
+          p_action?: string
+          p_metadata?: Json
+          target_user_id: string
+        }
         Returns: boolean
       }
       handle_successful_checkout: {
@@ -744,7 +791,12 @@ export type Database = {
         Returns: undefined
       }
       increment_ai_credits: {
-        Args: { amount: number; user_id: string }
+        Args: {
+          amount: number
+          p_action?: string
+          p_metadata?: Json
+          target_user_id: string
+        }
         Returns: undefined
       }
       process_referral: {

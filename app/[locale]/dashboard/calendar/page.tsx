@@ -1,7 +1,6 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -138,8 +137,9 @@ export default function CalendarPage() {
                                <Image 
                                  src={`https://img.logo.dev/${interview.job_application.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                                  alt={interview.job_application.company.name}
-                                 fill
-                                 className="object-contain p-1"
+                                 width={64}
+                                 height={64}
+                                 className="object-contain"
                                  onError={(e) => {
                                    (e.target as any).style.display = 'none';
                                    (e.target as any).nextSibling.style.display = 'flex';
@@ -202,7 +202,8 @@ export default function CalendarPage() {
                                  src={`https://img.logo.dev/${interview.job_application.company.website.replace('https://', '')}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_PUBLISHABLE_KEY}`} 
                                  alt={interview.job_application.company.name}
                                  fill
-                                 className="object-contain p-2"
+                                 sizes='(max-width: 768px) 10vw, 3vw'
+                                 className="object-contain rounded-md"
                                  onError={(e) => {
                                    (e.target as any).style.display = 'none';
                                    (e.target as any).nextSibling.style.display = 'flex';
@@ -217,7 +218,7 @@ export default function CalendarPage() {
                           <h4 className="font-bold text-foreground group-hover:text-primary transition-colors">{interview.job_application.position}</h4>
                           <div className="flex flex-wrap items-center gap-y-1 gap-x-3 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1 font-medium text-foreground/70"><Building2 className="h-3 w-3" /> {interview.job_application.company.name}</span>
-                            <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" /> {new Date(interview.interview_date!).toLocaleDateString()}</span>
+                            <span className="flex items-center gap-1"><CalendarIcon className="h-3 w-3" /> {new Date(interview.interview_date!).toLocaleDateString('en-US')}</span>
                             <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {new Date(interview.interview_date!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         </div>
