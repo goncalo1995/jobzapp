@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     const { profile, jobDescription, model = "anthropic/claude-3.5-sonnet", customApiKey } = await request.json();
 
-    const expectedCost = calculateCreditCost('COVER_LETTER_GENERATE', model);
+    const expectedCost = calculateCreditCost('CV_GENERATE', model);
     const isByok = !!customApiKey;
 
     if (!profile || !jobDescription) {
